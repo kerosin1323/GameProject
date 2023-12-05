@@ -22,7 +22,7 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-        firstwindow.ChooseMode(screen)
+        firstwindow.Menu(screen)
 
         pygame.display.flip()
         fpsClock.tick(fps)
