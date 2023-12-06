@@ -14,13 +14,15 @@ class Menu:
 
         self.objects = []
 
-        Button(200, 150, 400, 80, '1 VS 1', self.objects, self.open_one_vs_one)
-        Button(200, 300, 400, 80, 'Против бота', self.objects, self.open_against_bot)
-        Button(200, 450, 400, 80, 'Настройки', self.objects, self.open_settings)
+        Button(200, 150, 400, 80, '1 VS 1', self.objects, self.open_one_vs_one, self.screen)
+        Button(200, 300, 400, 80, 'Против бота', self.objects, self.open_against_bot, self.screen)
+        Button(200, 450, 400, 80, 'Настройки', self.objects, self.open_settings, self.screen)
         for object in self.objects:
             object.process(self.screen)
 
     def open_one_vs_one(self):
+        self.screen.fill((0, 0, 0))
+        pygame.display.flip()
         OneVSOne.ChooseCountries(self.screen)
 
     def open_against_bot(self):
