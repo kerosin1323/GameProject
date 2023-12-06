@@ -18,12 +18,12 @@ class Menu:
         Button(200, 300, 400, 80, 'Против бота', self.objects, self.open_against_bot, self.screen)
         Button(200, 450, 400, 80, 'Настройки', self.objects, self.open_settings, self.screen)
         for object in self.objects:
-            object.process(self.screen)
+            object.process()
 
     def open_one_vs_one(self):
         self.screen.fill((0, 0, 0))
-        pygame.display.flip()
         OneVSOne.ChooseCountries(self.screen)
+        return
 
     def open_against_bot(self):
         pass
