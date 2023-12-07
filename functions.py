@@ -3,6 +3,7 @@ import pygame
 
 
 class Button:
+    """Класс для создания кнопки"""
     def __init__(self, x, y, width, height, buttonText, objects, onclickFunction, screen):
         self.x = x
         self.y = y
