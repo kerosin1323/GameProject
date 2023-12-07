@@ -1,6 +1,7 @@
 import pygame
 from functions import *
 from const import *
+import firstwindow
 
 
 class ChooseCountries:
@@ -27,6 +28,10 @@ class ChooseCountries:
         self.id_country1 = 0
         self.id_country2 = 0
         while True:
+            self.image_back = pygame.image.load('image/home.jpg')
+            self.image_next = pygame.image.load('image/next.png')
+            screen.blit(self.image_back, (30, 520))
+            screen.blit(self.image_next, (720, 510))
             self.image1 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country1]]}.png')
             self.image2 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country2]]}.png')
             screen.blit(self.image1, (90, 250))
@@ -42,12 +47,24 @@ class ChooseCountries:
                             self.id_country1 = 19
                         else:
                             self.id_country1 -= 1
+                    elif 250 < mouse_pos[0] < 300 and 250 < mouse_pos[1] < 350:
+                        if self.id_country1 == 19:
+                            self.id_country1 = 0
+                        else:
+                            self.id_country1 += 1
+                    elif 500 < mouse_pos[0] < 550 and 250 < mouse_pos[1] < 350:
+                        if self.id_country2 == 0:
+                            self.id_country2 = 19
+                        else:
+                            self.id_country2 -= 1
+                    elif 720 < mouse_pos[0] < 770 and 250 < mouse_pos[1] < 350:
+                        if self.id_country2 == 19:
+                            self.id_country2 = 0
+                        else:
+                            self.id_country2 += 1
+                    elif 30 < mouse_pos[0] < 80 and 520 < mouse_pos[1] < 570:
+                        firstwindow.Menu(screen)
+                    elif 720 < mouse_pos[0] < 770 and 510 < mouse_pos[1] < 570:
+                        pass
+
             pygame.display.flip()
-
-
-
-    def back_country(self):
-        pass
-
-    def next_country(self):
-        pass
