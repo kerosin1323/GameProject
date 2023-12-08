@@ -50,7 +50,7 @@ class ChooseCountry:
                         else:
                             self.id_country1 += 1
                     elif 30 < mouse_pos[0] < 100 and 510 < mouse_pos[1] < 580:
-                            firstwindow.Menu(screen)
+                        firstwindow.Menu(screen)
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
                         pass
 

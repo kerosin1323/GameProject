@@ -1,9 +1,7 @@
 import sys
-from const import *
-import pygame
-from functions import *
-import OneVSOne
 import AgainstBot
+import OneVSOne
+from functions import *
 
 
 class Menu:
@@ -28,8 +26,8 @@ class Menu:
                     pygame.quit()
                     sys.exit()
                 # оработка нажатия на кнопку
-                for object in self.objects:
-                    object.process()
+                for i in self.objects:
+                    i.process()
             pygame.display.flip()
 
     def open_one_vs_one(self):
@@ -40,4 +38,3 @@ class Menu:
 
     def open_settings(self):
         pass
-

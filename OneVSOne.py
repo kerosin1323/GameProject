@@ -1,4 +1,3 @@
-import pygame
 from functions import *
 from const import *
 import firstwindow

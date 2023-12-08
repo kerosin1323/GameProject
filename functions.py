@@ -1,4 +1,3 @@
-import sys
 import pygame
 
 
@@ -34,4 +33,3 @@ class Button:
         if self.buttonRect.collidepoint(mousePos):
             if pygame.mouse.get_pressed()[0]:
                 self.onclickFunction()
-

@@ -1,8 +1,6 @@
 import pygame
-import sys
 import firstwindow
 from const import *
-
 
 # запуск программы
 if __name__ == '__main__':
