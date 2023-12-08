@@ -1,5 +1,5 @@
 FPS = 60
-SIZE = 800, 600
+SIZE = 1000, 600
 COUNTRIES_FLAG = {'Россия': 'russia',
                   'Бразилия': 'brazil',
                   'Франция': 'france',

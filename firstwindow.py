@@ -3,6 +3,7 @@ from const import *
 import pygame
 from functions import *
 import OneVSOne
+import AgainstBot
 
 
 class Menu:
@@ -10,15 +11,16 @@ class Menu:
     def __init__(self, screen):
         self.objects = []
         self.screen = screen
-        self.screen.fill((0, 0, 0))
+        background = pygame.image.load('image/map2.png')
+        screen.blit(background, (0, 0))
         # нарисовка кнопок
-        Button(200, 150, 400, 80, '1 VS 1', self.objects, self.open_one_vs_one, self.screen)
-        Button(200, 300, 400, 80, 'Против бота', self.objects, self.open_against_bot, self.screen)
-        Button(200, 450, 400, 80, 'Настройки', self.objects, self.open_settings, self.screen)
+        Button(250, 150, 500, 80, '1 VS 1', self.objects, self.open_one_vs_one, self.screen)
+        Button(250, 300, 500, 80, 'Против бота', self.objects, self.open_against_bot, self.screen)
+        Button(250, 450, 500, 80, 'Настройки', self.objects, self.open_settings, self.screen)
         font = pygame.font.Font(None, 50)
         # заголовок окна
         self.textSurface = font.render('PyGame', True, (255, 255, 255), None)
-        self.textRect = self.textSurface.get_rect(center=(400, 80))
+        self.textRect = self.textSurface.get_rect(center=(500, 80))
         self.screen.blit(self.textSurface, self.textRect)
         while True:
             for event in pygame.event.get():
@@ -34,7 +36,7 @@ class Menu:
         OneVSOne.ChooseCountries(self.screen)
 
     def open_against_bot(self):
-        pass
+        AgainstBot.ChooseCountry(self.screen)
 
     def open_settings(self):
         pass

@@ -3,16 +3,16 @@ import sys
 import firstwindow
 from const import *
 
+
 # запуск программы
 if __name__ == '__main__':
     # инициализация pygame
     pygame.init()
     fpsClock = pygame.time.Clock()
-    screen = pygame.display.set_mode(SIZE)
+    screen = pygame.display.set_mode(SIZE, pygame.RESIZABLE)
     # название окна
     pygame.display.set_caption('PyBall')
     while True:
-        screen.fill((20, 20, 20))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
