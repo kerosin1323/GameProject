@@ -2,6 +2,7 @@ import pygame
 from const import *
 import firstwindow
 import sys
+import game
 
 
 class ChooseCountry:
@@ -52,6 +53,6 @@ class ChooseCountry:
                     elif 30 < mouse_pos[0] < 100 and 510 < mouse_pos[1] < 580:
                         firstwindow.Menu(screen)
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
-                        pass
+                        game.Pitch(screen, self.id_country1)
 
             pygame.display.flip()

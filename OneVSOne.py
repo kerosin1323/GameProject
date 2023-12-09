@@ -1,6 +1,9 @@
+import sys
+
 from functions import *
 from const import *
 import firstwindow
+import game
 
 
 class ChooseCountries:
@@ -8,7 +11,7 @@ class ChooseCountries:
     def __init__(self, screen):
         self.screen = screen
         background = pygame.image.load('image/map2.png')
-        screen.blit(background, (0, 0))
+        self.screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
 
         # заголовок окна
@@ -83,5 +86,5 @@ class ChooseCountries:
                     elif 30 < mouse_pos[0] < 100 and 510 < mouse_pos[1] < 580:
                         firstwindow.Menu(screen)
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
-                        pass
+                        game.Pitch(screen, self.id_country1, self.id_country2)
             pygame.display.flip()
