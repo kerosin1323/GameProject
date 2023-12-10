@@ -2,11 +2,10 @@ import sys
 import AgainstBot
 import OneVSOne
 from functions import *
-import const
 
 
 class Menu:
-    """Создание стартовой менюшки"""
+    """Создание стартового меню"""
     def __init__(self, screen):
         self.objects = []
         self.screen = screen
@@ -21,7 +20,6 @@ class Menu:
         self.textSurface = font.render('PyGame', True, (255, 255, 255), None)
         self.textRect = self.textSurface.get_rect(center=(500, 80))
         self.screen.blit(self.textSurface, self.textRect)
-
 
         while True:
             for event in pygame.event.get():
