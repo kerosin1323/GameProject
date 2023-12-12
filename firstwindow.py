@@ -2,6 +2,7 @@ import sys
 import AgainstBot
 import OneVSOne
 from functions import *
+import registration
 
 
 class Menu:
@@ -21,11 +22,17 @@ class Menu:
         self.textSurface = font.render('PyBall', True, (255, 255, 255), None)
         self.textRect = self.textSurface.get_rect(center=(500, 70))
         self.screen.blit(self.textSurface, self.textRect)
+        self.image_exit = pygame.image.load('image/exit.png')
+        self.screen.blit(self.image_exit, (30, 30))
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if 30 < mouse_pos[0] < 100 and 30 < mouse_pos[1] < 100:
+                        registration.Registration(screen)
                 # оработка нажатия на кнопку
                 for i in self.objects:
                     i.process()
