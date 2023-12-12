@@ -1,5 +1,5 @@
 import pygame
-import firstwindow
+import registration
 from const import *
 
 # запуск программы
@@ -14,6 +14,6 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-        firstwindow.Menu(screen)
+        registration.Registration(screen)
         pygame.display.flip()
         fpsClock.tick(FPS)

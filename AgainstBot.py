@@ -8,6 +8,7 @@ import game
 class ChooseCountry:
     def __init__(self, screen):
         self.screen = screen
+        # фон экрана
         background = pygame.image.load('image/map2.png')
         screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
@@ -25,9 +26,11 @@ class ChooseCountry:
 
         self.id_country1 = 0
         while True:
-            # кнопки движения назад и вперед по окнам
+            # кнопки движения назад и вперед по окнам и кнопки для открывания статистики
             self.image_back = pygame.image.load('image/home.png')
             self.image_next = pygame.image.load('image/next.png')
+            self.image_stats = pygame.image.load('image/stats.png')
+            screen.blit(self.image_stats, (30, 30))
             screen.blit(self.image_back, (30, 510))
             screen.blit(self.image_next, (900, 510))
             # создание флага страны
@@ -54,5 +57,4 @@ class ChooseCountry:
                         firstwindow.Menu(screen)
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
                         game.Pitch(screen, self.id_country1)
-
             pygame.display.flip()

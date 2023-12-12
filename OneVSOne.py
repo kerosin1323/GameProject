@@ -42,9 +42,11 @@ class ChooseCountries:
         self.id_country1 = 0
         self.id_country2 = 0
         while True:
-            # кнопки для перемещения по окнам
+            # кнопки для перемещения по окнам и для открывания статистики
             self.image_back = pygame.image.load('image/home.png')
             self.image_next = pygame.image.load('image/next.png')
+            self.image_stats = pygame.image.load('image/stats.png')
+            screen.blit(self.image_stats, (30, 30))
             screen.blit(self.image_back, (30, 510))
             screen.blit(self.image_next, (900, 510))
             # создание флага страны
