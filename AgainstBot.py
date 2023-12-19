@@ -24,15 +24,16 @@ class ChooseCountry:
         pygame.draw.polygon(self.screen, (0, 255, 0), triangle1)
         pygame.draw.polygon(self.screen, (0, 255, 0), triangle2)
 
+        # кнопки движения назад и вперед по окнам и кнопки для открывания статистики
+        self.image_back = pygame.image.load('image/home.png')
+        self.image_next = pygame.image.load('image/next.png')
+        self.image_stats = pygame.image.load('image/stats.png')
+        screen.blit(self.image_stats, (30, 30))
+        screen.blit(self.image_back, (30, 510))
+        screen.blit(self.image_next, (900, 510))
+
         self.id_country1 = 0
         while True:
-            # кнопки движения назад и вперед по окнам и кнопки для открывания статистики
-            self.image_back = pygame.image.load('image/home.png')
-            self.image_next = pygame.image.load('image/next.png')
-            self.image_stats = pygame.image.load('image/stats.png')
-            screen.blit(self.image_stats, (30, 30))
-            screen.blit(self.image_back, (30, 510))
-            screen.blit(self.image_next, (900, 510))
             # создание флага страны
             self.image1 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country1]]}.png')
             screen.blit(self.image1, (390, 225))

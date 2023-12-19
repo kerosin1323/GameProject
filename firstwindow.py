@@ -3,6 +3,7 @@ import AgainstBot
 import OneVSOne
 from functions import *
 import registration
+import online
 
 
 class Menu:
@@ -45,7 +46,7 @@ class Menu:
         AgainstBot.ChooseCountry(self.screen)
 
     def open_online(self):
-        pass
+        online.Online(self.screen)
 
     def open_settings(self):
         pass

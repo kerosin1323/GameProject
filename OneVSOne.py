@@ -39,16 +39,18 @@ class ChooseCountries:
         self.text_vs = self.textSurfaceObj.get_rect(center=(570, 265))
         self.screen.blit(self.text_vs_surface, self.text_vs)
 
+        # кнопки для перемещения по окнам и для открывания статистики
+        self.image_back = pygame.image.load('image/home.png')
+        self.image_next = pygame.image.load('image/next.png')
+        self.image_stats = pygame.image.load('image/stats.png')
+        screen.blit(self.image_stats, (30, 30))
+        screen.blit(self.image_back, (30, 510))
+        screen.blit(self.image_next, (900, 510))
+
         self.id_country1 = 0
         self.id_country2 = 0
-        while True:
-            # кнопки для перемещения по окнам и для открывания статистики
-            self.image_back = pygame.image.load('image/home.png')
-            self.image_next = pygame.image.load('image/next.png')
-            self.image_stats = pygame.image.load('image/stats.png')
-            screen.blit(self.image_stats, (30, 30))
-            screen.blit(self.image_back, (30, 510))
-            screen.blit(self.image_next, (900, 510))
+        running = True
+        while running:
             # создание флага страны
             self.image1 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country1]]}.png')
             self.image2 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country2]]}.png')
@@ -83,6 +85,8 @@ class ChooseCountries:
                             self.id_country2 += 1
                     elif 30 < mouse_pos[0] < 100 and 510 < mouse_pos[1] < 580:
                         firstwindow.Menu(screen)
+                        running = False
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
                         game.Pitch(screen, self.id_country1, self.id_country2)
+                        running = False
             pygame.display.flip()
