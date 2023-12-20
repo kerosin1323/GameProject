@@ -1,5 +1,7 @@
 import pygame
 
+import registration
+
 
 class Button:
     """Класс для создания кнопки"""
@@ -69,4 +71,3 @@ class TextInputBox(pygame.sprite.Sprite):
                 else:
                     self.text += event.unicode
             self.render_text()
-

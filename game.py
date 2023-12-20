@@ -1,5 +1,7 @@
 import random
 from OneVSOne import *
+import SQL
+import registration
 
 
 class Pitch:
@@ -11,7 +13,7 @@ class Pitch:
         screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
         # счетчик таймера
-        countdown = 90
+        countdown = 3
         TIMEREVENT = pygame.USEREVENT + 1
         pygame.time.set_timer(TIMEREVENT, 1000)
         self.goals1 = 0
@@ -58,6 +60,14 @@ class Pitch:
 
 class EndGame:
     def __init__(self, screen, id1, id2, score1, score2):
+        name = registration.Registration.name
+        if score1 > score2:
+            res = (1, 0, 0)
+        elif score1 == score2:
+            res = (0, 1, 0)
+        else:
+            res = (0, 0, 1)
+        SQL.AgainstBotDB(name, res, score1, score2, 'play-off')
         self.screen = screen
         background = pygame.image.load('image/map2.png')
         screen.blit(background, (0, 0))

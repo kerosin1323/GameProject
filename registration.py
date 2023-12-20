@@ -1,8 +1,11 @@
 import firstwindow
 from functions import *
+import SQL
+from const import *
 
 
 class Registration:
+    name = ''
     def __init__(self, screen):
         self.error = ''
         self.screen = screen
@@ -33,9 +36,11 @@ class Registration:
 
     def func(self):
         self.name = self.text_input_box.text
+        Registration.name = self.name
         if self.name == '':
             self.error = 'Ошибка! Слишком короткое имя!'
         elif len(self.name) > 50:
             self.error = 'Ошибка! Слишком длинное имя!'
         else:
+            SQL.Player(self.name)
             firstwindow.Menu(self.screen)
