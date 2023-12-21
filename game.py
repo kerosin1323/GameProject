@@ -13,7 +13,7 @@ class Pitch:
         screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
         # счетчик таймера
-        countdown = 3
+        countdown = 90
         TIMEREVENT = pygame.USEREVENT + 1
         pygame.time.set_timer(TIMEREVENT, 1000)
         self.goals1 = 0
