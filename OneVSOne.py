@@ -87,6 +87,6 @@ class ChooseCountries:
                         firstwindow.Menu(screen)
                         running = False
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
-                        game.Pitch(screen, self.id_country1, self.id_country2)
+                        game.Pitch(screen, 'OneVSOne',  self.id_country1, self.id_country2)
                         running = False
             pygame.display.flip()

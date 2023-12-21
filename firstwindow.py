@@ -25,27 +25,33 @@ class Menu:
         self.screen.blit(self.textSurface, self.textRect)
         self.image_exit = pygame.image.load('image/exit.png')
         self.screen.blit(self.image_exit, (30, 30))
-        while True:
+        self.running = True
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pygame.MOUSEBUTTONDOWN and self.running:
                     mouse_pos = pygame.mouse.get_pos()
                     if 30 < mouse_pos[0] < 100 and 30 < mouse_pos[1] < 100:
+                        self.running = False
                         registration.Registration(screen)
                 # оработка нажатия на кнопку
-                for i in self.objects:
-                    i.process()
+                if self.running:
+                    for i in self.objects:
+                        i.process()
             pygame.display.flip()
 
     def open_one_vs_one(self):
+        self.running = False
         OneVSOne.ChooseCountries(self.screen)
 
     def open_against_bot(self):
+        self.running = False
         AgainstBot.ChooseCountry(self.screen)
 
     def open_online(self):
+        self.running = False
         online.Online(self.screen)
 
     def open_settings(self):

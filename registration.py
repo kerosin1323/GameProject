@@ -1,11 +1,11 @@
 import firstwindow
 from functions import *
 import SQL
-from const import *
 
 
 class Registration:
     name = ''
+
     def __init__(self, screen):
         self.error = ''
         self.screen = screen
@@ -15,7 +15,8 @@ class Registration:
         # создание линии для ввода текста
         self.text_input_box = TextInputBox(300, 300, 400, font, self.func)
         group = pygame.sprite.Group(self.text_input_box)
-        while True:
+        self.running = True
+        while self.running:
             event_list = pygame.event.get()
             for event in event_list:
                 if event.type == pygame.QUIT:
@@ -37,6 +38,7 @@ class Registration:
     def func(self):
         self.name = self.text_input_box.text
         Registration.name = self.name
+        self.running = False
         if self.name == '':
             self.error = 'Ошибка! Слишком короткое имя!'
         elif len(self.name) > 50:

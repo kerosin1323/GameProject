@@ -6,7 +6,7 @@ import registration
 
 class Pitch:
     """Класс для создания поля"""
-    def __init__(self, screen, id1, id2=None):
+    def __init__(self, screen, called, id1, id2=None):
         id2 = random.randint(0, 19) if id2 is None else id2
         # загрузка фона
         background = pygame.image.load('image/map2.png')
@@ -48,7 +48,7 @@ class Pitch:
                     countdown -= 1
                     if countdown == -1:
                         running = False
-                        EndGame(screen, id1, id2, self.goals1, self.goals2)
+                        EndGame(screen, id1, id2, self.goals1, self.goals2, called)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if 5 < mouse_pos[0] < 95 and 250 < mouse_pos[1] < 494:
@@ -59,7 +59,7 @@ class Pitch:
 
 
 class EndGame:
-    def __init__(self, screen, id1, id2, score1, score2):
+    def __init__(self, screen, id1, id2, score1, score2, called):
         name = registration.Registration.name
         if score1 > score2:
             res = (1, 0, 0)
@@ -67,7 +67,10 @@ class EndGame:
             res = (0, 1, 0)
         else:
             res = (0, 0, 1)
-        SQL.AgainstBotDB(name, res, score1, score2, 'play-off')
+        if called == 'AgainstBot':
+            SQL.AgainstBotDB(name).append(res, score1, score2, 'play-off', COUNTRIES_FLAG[COUNTRY[id1]], COUNTRIES_FLAG[COUNTRY[id2]])
+        elif called == 'online':
+            SQL.OnlineDB(name).append(res, score1, score2)
         self.screen = screen
         background = pygame.image.load('image/map2.png')
         screen.blit(background, (0, 0))

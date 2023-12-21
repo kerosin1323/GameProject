@@ -1,5 +1,5 @@
 import sys
-
+import stats
 import pygame
 from const import *
 import firstwindow
@@ -20,7 +20,8 @@ class Online:
         group = pygame.sprite.Group(self.text_input_box)
 
         self.id_country1 = 0
-        while True:
+        running = True
+        while running:
             screen.blit(background, (0, 0))
             # заголовок
             self.textSurface = font.render('Введите пароль игры: ', True, (255, 255, 255), None)
@@ -67,20 +68,26 @@ class Online:
                             self.id_country1 += 1
                     elif 30 < mouse_pos[0] < 100 and 510 < mouse_pos[1] < 580:
                         firstwindow.Menu(screen)
+                        running = False
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
-                        game.Pitch(screen, self.id_country1)
-            group.update(event_list)
-            if self.error:
-                # вывод ошибки
-                self.textSurface1 = font.render(f'{self.error}', True, (255, 0, 0), None)
-                self.textRect1 = self.textSurface1.get_rect(center=(500, 520))
-                self.screen.blit(self.textSurface1, self.textRect1)
-            group.draw(screen)
-            pygame.display.flip()
+                        game.Pitch(screen, 'online', self.id_country1)
+                        running = False
+                    elif 30 < mouse_pos[0] < 100 and 30 < mouse_pos[1] < 100:
+                        stats.Stats(screen, 'online')
+                        running = False
+            if running:
+                group.update(event_list)
+                if self.error:
+                    # вывод ошибки
+                    self.textSurface1 = font.render(f'{self.error}', True, (255, 0, 0), None)
+                    self.textRect1 = self.textSurface1.get_rect(center=(500, 520))
+                    self.screen.blit(self.textSurface1, self.textRect1)
+                group.draw(screen)
+                pygame.display.flip()
 
     def func(self):
         self.name = self.text_input_box.text
         if sum([1 for i in self.name if i.isdigit()]) != len(self.name):
             self.error = 'Ошибка! Пароль должны состоять из чисел!'
         else:
-            game.Pitch(self.screen, self.id_country1)
+            game.Pitch(self.screen, 'online', self.id_country1)

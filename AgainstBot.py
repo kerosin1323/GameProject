@@ -3,6 +3,7 @@ from const import *
 import firstwindow
 import sys
 import game
+import stats
 
 
 class ChooseCountry:
@@ -33,7 +34,8 @@ class ChooseCountry:
         screen.blit(self.image_next, (900, 510))
 
         self.id_country1 = 0
-        while True:
+        running = True
+        while running:
             # создание флага страны
             self.image1 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country1]]}.png')
             screen.blit(self.image1, (390, 225))
@@ -41,7 +43,7 @@ class ChooseCountry:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pygame.MOUSEBUTTONDOWN and running:
                     mouse_pos = pygame.mouse.get_pos()
                     # обработка нажатия
                     if 325 < mouse_pos[0] < 375 and 250 < mouse_pos[1] < 350:
@@ -56,6 +58,11 @@ class ChooseCountry:
                             self.id_country1 += 1
                     elif 30 < mouse_pos[0] < 100 and 510 < mouse_pos[1] < 580:
                         firstwindow.Menu(screen)
+                        running = False
                     elif 900 < mouse_pos[0] < 970 and 510 < mouse_pos[1] < 580:
-                        game.Pitch(screen, self.id_country1)
+                        game.Pitch(screen, 'AgainstBot', self.id_country1)
+                        running = False
+                    elif 30 < mouse_pos[0] < 100 and 30 < mouse_pos[1] < 100:
+                        stats.Stats(screen, 'AgainstBot')
+                        running = False
             pygame.display.flip()
