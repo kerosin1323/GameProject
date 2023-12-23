@@ -31,6 +31,13 @@ class Pitch:
         player1 = Player(300, 340)
         player2 = Player(700, 340)
         left = right = False
+        for event in pygame.event.get():
+            if event.type == TIMEREVENT:
+                # изменение счетчика таймера
+                countdown -= 1
+                if countdown == -1:
+                    running = False
+                    EndGame(screen, id1, id2, self.goals1, self.goals2, called)
         while running:
             timer = pygame.time.Clock()
             timer.tick(60)
@@ -44,12 +51,6 @@ class Pitch:
                         self.goals2 += 1
                     elif 905 < mouse_pos[0] < 995 and 250 < mouse_pos[1] < 494:
                         self.goals1 += 1
-                if event.type == TIMEREVENT:
-                    # изменение счетчика таймера
-                    countdown -= 1
-                    if countdown == -1:
-                        running = False
-                        EndGame(screen, id1, id2, self.goals1, self.goals2, called)
                 if keys[pygame.K_LEFT]:
                     left = True
                 if keys[pygame.K_RIGHT]:
@@ -58,6 +59,8 @@ class Pitch:
                     left = right = False
                 screen.blit(background, (0, 0))
                 Gates((10, 285), screen)
+                ball = Ball(500, 440)
+                ball.draw(screen)
                 Gates((900, 285), screen)
                 # создание флагов, которые выбрали игроки
                 screen.blit(con_image2, (550, 510))
@@ -140,7 +143,29 @@ class Gates(pygame.sprite.Sprite):
 
 
 class Ball(pygame.sprite.Sprite):
-    pass
+    def __init__(self, x, y):
+        super().__init__()
+        self.xvel = 0  # скорость перемещения. 0 - стоять на месте
+        self.x = x  # Начальная позиция Х, пригодится когда будем переигрывать уровень
+        self.y = y
+        self.image = pygame.Surface((80, 80), pygame.SRCALPHA, 32)
+        self.image_ball = pygame.image.load('image/ball1.png')
+        self.rect = pygame.Rect(x, y, 50, 50)  # прямоугольный объект
+
+    def update(self, left, right):
+        if left:
+            self.xvel = -7  # Лево = x- n
+
+        if right:
+            self.xvel = 7  # Право = x + n
+
+        if not (left or right):  # стоим, когда нет указаний идти
+            self.xvel = 0
+
+        self.rect.x += self.xvel  # переносим свои положение на xvel
+
+    def draw(self, screen):  # Выводим себя на экран
+        screen.blit(self.image_ball, (self.x, self.y))
 
 
 class Player(pygame.sprite.Sprite):
