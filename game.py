@@ -6,7 +6,6 @@ from OneVSOne import *
 import SQL
 import registration
 
-
 horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
 
@@ -38,7 +37,7 @@ class Pitch:
         ball = Ball(500, 440)
         gates1 = Gates((10, 285), screen)
         gates2 = Gates((900, 285), screen)
-        left = right = False
+        left = up = right = False
         while running:
             timer = pygame.time.Clock()
             timer.tick(60)
@@ -57,6 +56,10 @@ class Pitch:
                         running = False
                         EndGame(screen, id1, id2, self.goals1, self.goals2, called)
             keys = pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
+                up = True
+            else:
+                up = False
             if keys[pygame.K_LEFT]:
                 left = True
                 right = False
@@ -76,16 +79,18 @@ class Pitch:
             self.textSurfaceObj = fontObj.render(f'{countdown}', True, (0, 0, 0), None)
             self.textRectObj = self.textSurfaceObj.get_rect(center=(500, 30))
             screen.blit(self.textSurfaceObj, self.textRectObj)
-            player1.update(left, right)
+            player1.update(left, right, up)
             player1.draw(screen)
             player2.draw(screen)
+            if player1.collide_ball(ball):
+                ball.update(False, True)
+            if gates1.check_goal(ball):
+                self.goals1 += 1
+            elif gates2.check_goal(ball):
+                self.goals2 += 1
+            ball.draw(screen)
             gates1.draw()
             gates2.draw()
-            gates1.add(horizontal_borders)
-            gates2.add(horizontal_borders)
-            if player1.collide_ball(screen):
-                ball.update(False, True)
-            ball.draw(screen)
             pygame.display.flip()
 
 
@@ -150,10 +155,8 @@ class Gates(pygame.sprite.Sprite):
     def draw(self):
         self.screen.blit(self.image_gate, self.pos)
 
-    def check_goal(self):
-        horizontal_borders = pygame.sprite.Group()
-        return pygame.sprite.spritecollideany(Gates(self.pos, self.screen), horizontal_borders) \
-            and not pygame.sprite.collide_rect(Gates(self.pos, self.screen), Player(self.pos, self.screen))
+    def check_goal(self, ball):
+        return ball.x > 900 and ball.y - 50 > self.rect.y or ball.x < 10
 
 
 class Ball(pygame.sprite.Sprite):
@@ -176,10 +179,8 @@ class Ball(pygame.sprite.Sprite):
 
         if not (left or right):  # стоим, когда нет указаний идти
             self.xvel = 0
-
-        self.x += self.xvel # переносим свои положение на xvel
-        self.remove(horizontal_borders)
-        self.add(horizontal_borders)
+        if 10 <= self.x + self.xvel <= 940:
+            self.x += self.xvel  # переносим свои положение на xvel
 
     def draw(self, screen):  # Выводим себя на экран
         screen.blit(self.image_ball, (self.x, self.rect.y))
@@ -193,9 +194,21 @@ class Player(pygame.sprite.Sprite):
         self.startY = y
         self.image = pygame.Surface((80, 150))
         self.image.fill((255, 0, 0))
+        self.is_jump = False
+        self.jump_count = 12
         self.rect = pygame.Rect(x, y, 80, 150)  # прямоугольный объект
 
-    def update(self, left, right, ):
+    def update(self, left, right, up):
+        if not self.is_jump:
+            if up:
+                self.is_jump = True
+        else:
+            if self.jump_count >= -12:
+                self.rect.y -= self.jump_count
+                self.jump_count -= 2
+            else:
+                self.is_jump = False
+                self.jump_count = 12
         if left:
             self.xvel = -7  # Лево = x- n
 
@@ -206,13 +219,10 @@ class Player(pygame.sprite.Sprite):
             self.xvel = 0
 
         if 10 <= self.rect.x + self.xvel <= 900:
-            self.rect.x += self.xvel # переносим свои положение на xvel
+            self.rect.x += self.xvel  # переносим свои положение на xvel
 
     def draw(self, screen):  # Выводим себя на экран
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
-    def collide_ball(self, screen):
-        print(horizontal_borders)
-        return pygame.sprite.spritecollideany(self, horizontal_borders) \
-                and not pygame.sprite.collide_rect(self, Gates((10, 285), screen)) \
-                and not pygame.sprite.collide_rect(self, Gates((900, 285), screen))
+    def collide_ball(self, ball):
+        return ball.x - 25 <= self.rect.x + 50 <= ball.x + 25 and self.rect.y + 150 == ball.y + 50
