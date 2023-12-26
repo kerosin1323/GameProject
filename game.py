@@ -89,7 +89,7 @@ class Pitch:
             self.textRectObj = self.textSurfaceObj.get_rect(center=(500, 30))
             screen.blit(self.textSurfaceObj, self.textRectObj)
             if self.is_scored:
-                time.sleep(2)
+                time.sleep(1)
                 player1 = Player(300, 340)
                 player2 = Player(700, 340)
                 ball = Ball(500, 440)
@@ -296,7 +296,7 @@ class Player(pygame.sprite.Sprite):
         if not (left or right):  # стоим, когда нет указаний идти
             self.xvel = 0
 
-        if 10 <= self.rect.x + self.xvel <= 900:
+        if 10 <= self.rect.x + self.xvel <= 910:
             self.rect.x += self.xvel  # переносим свои положение на xvel
 
     def draw(self, screen):  # Выводим себя на экран
