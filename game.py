@@ -37,8 +37,10 @@ class Pitch:
         ball = Ball(500, 440)
         gates1 = Gates((10, 285), screen)
         gates2 = Gates((900, 285), screen, True)
-        shot1 = left1 = up1 = right1 = False
-        shot2 = left2 = up2 = right2 = False
+        left1 = up1 = right1 = False
+        left2 = up2 = right2 = False
+        shot1 = shot2 = left = right = False
+        self.is_scored = False
         while running:
             timer = pygame.time.Clock()
             timer.tick(60)
@@ -51,14 +53,6 @@ class Pitch:
                         running = False
                         EndGame(screen, id1, id2, self.goals1, self.goals2, called)
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_f]:
-                shot1 = True
-            else:
-                shot1 = False
-            if keys[pygame.K_SPACE]:
-                shot2 = True
-            else:
-                shot2 = False
             if keys[pygame.K_w]:
                 up1 = True
             else:
@@ -94,28 +88,41 @@ class Pitch:
             self.textSurfaceObj = fontObj.render(f'{countdown}', True, (0, 0, 0), None)
             self.textRectObj = self.textSurfaceObj.get_rect(center=(500, 30))
             screen.blit(self.textSurfaceObj, self.textRectObj)
+            if self.is_scored:
+                time.sleep(2)
+                player1 = Player(300, 340)
+                player2 = Player(700, 340)
+                ball = Ball(500, 440)
+                self.is_scored = False
+            if player1.rect.x + 72 <= ball.x <= player1.rect.x + 87 and keys[pygame.K_f]:
+                shot1 = True
+                shot2 = False
+            elif player2.rect.x - 5 <= ball.x + 50 <= player2.rect.x + 7 and keys[pygame.K_SPACE]:
+                shot2 = True
+                shot1 = False
+            else:
+                shot1, shot2 = False, False
+            if player1.collide_ball_left(ball) and not left1:
+                right = True
+                left = False
+            elif player2.collide_ball_right(ball) and not right2:
+                left = True
+                right = False
+            else:
+                left, right = False, False
+            if ball.collide_both(player1, player2) and not left1 and not right2:
+                shot1 = shot2 = left = right = left1 = left2 = right1 = right2 = False
+            ball.update(left, right, shot1, shot2, player1, player2)
+            if gates1.check_goal(ball) == 1:
+                self.goals1 += 1
+                self.is_scored = True
+            elif gates2.check_goal(ball) == 2:
+                self.goals2 += 1
+                self.is_scored = True
             player1.update(left1, right1, up1)
             player2.update(left2, right2, up2)
             player1.draw(screen)
             player2.draw(screen)
-            if player1.rect.x + 72 <= ball.x <= player1.rect.x + 82 and shot1:
-                ball.update(False, False, True, False)
-            if player1.collide_ball_left(ball) and not left1:
-                ball.update(False, True, False, False)
-            if player2.rect.x - 5 <= ball.x + 50 <= player2.rect.x + 7 and shot2:
-                ball.update(False, False, False, True)
-            if player2.collide_ball_right(ball) and not right2:
-                ball.update(True, False, False, False)
-            if gates1.check_goal(ball) == 1:
-                self.goals1 += 1
-                player1 = Player(300, 340)
-                player2 = Player(700, 340)
-                ball = Ball(500, 440)
-            elif gates2.check_goal(ball) == 2:
-                self.goals2 += 1
-                player1 = Player(300, 340)
-                player2 = Player(700, 340)
-                ball = Ball(500, 440)
             ball.draw(screen)
             gates1.draw()
             gates2.draw()
@@ -202,29 +209,59 @@ class Ball(pygame.sprite.Sprite):
         self.image = pygame.Surface((80, 80), pygame.SRCALPHA, 32)
         self.image_ball = pygame.image.load('image/ball1.png')
         self.rect = pygame.Rect(x, y, 50, 50)  # прямоугольный объект
+        self.is_shot = False
+        self.shot_count = 2
+        self.shooting = False
 
-    def update(self, left, right, shot1, shot2):
-        if shot1:
-            self.xvel = 50
-        elif shot2:
-            self.xvel = -50
-        elif left:
-            self.xvel = -7  # Лево = x- n
-
-        elif right:
-            self.xvel = 7  # Право = x + n
-
-        if not (left or right or shot1 or shot2):  # стоим, когда нет указаний идти
-            self.xvel = 0
-        if 10 <= self.x + self.xvel <= 940:
-            self.x += self.xvel
-        elif self.x + self.xvel <= 10:
-            self.x = 10
+    def update(self, left, right, shot1, shot2, p1, p2):
+        if not self.is_shot:
+            if shot1:
+                self.is_shot = True
         else:
-            self.x = 900
+            if self.shot_count <= 50:
+                self.xvel += self.shot_count
+                self.shooting = True
+                self.shot_count += 2
+            else:
+                self.is_shot = False
+                self.shot_count = 12
+        if not self.shooting:
+            if shot2:
+                self.xvel = -50
+            if left and (shot1 or shot2):
+                self.xvel -= 7  # Лево = x- n
+            elif left and not (shot1 or shot2):
+                self.xvel = -7
+            elif right and (shot1 or shot2):
+                self.xvel += 7  # Право = x + n
+            elif right and not (shot1 or shot2):
+                self.xvel = 7
+
+            if not (left or right or shot1 or shot2 or self.shooting):  # стоим, когда нет указаний идти
+                self.xvel = 0
+        if self.shooting and left:
+            self.is_shot = False
+            self.shooting = False
+            self.xvel = 0
+        if self.x + self.xvel <= p1.rect.x + 80 <= self.x:
+            self.x = p1.rect.x + 80
+        elif self.x + self.xvel >= p2.rect.x >= self.x:
+            self.x = p2.rect.x - 50
+        else:
+            if 10 <= self.x + self.xvel <= 940:
+                self.x += self.xvel
+            elif self.x + self.xvel <= 10:
+                self.x = 10
+            else:
+                self.x = 940
+
 
     def draw(self, screen):  # Выводим себя на экран
         screen.blit(self.image_ball, (self.x, self.rect.y))
+
+    def collide_both(self, player1, player2):
+        return player1.rect.x + 74 <= self.x <=self.x + 50 <= player2.rect.x + 6 and player1.rect.y + 150 == self.y + 50 \
+            and player2.rect.x - player1.rect.x <= 130
 
 
 class Player(pygame.sprite.Sprite):
@@ -270,3 +307,5 @@ class Player(pygame.sprite.Sprite):
 
     def collide_ball_right(self, ball):
         return self.rect.x <= ball.x + 50 <= self.rect.x + 6 and self.rect.y + 150 == ball.y + 50
+
+
