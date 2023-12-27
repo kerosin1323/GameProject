@@ -2,6 +2,10 @@ import random
 import time
 
 import pygame.sprite
+
+import AgainstBot
+import OneVSOne
+import online
 from const import *
 from OneVSOne import *
 import SQL
@@ -33,14 +37,15 @@ class Pitch:
         image2 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[id2]]}.png')
         con_image2 = pygame.transform.scale(image2, (90, 60))
         player1 = Player(300, 340)
-        player2 = Player(700, 340)
-        ball = Ball(500, 440)
+        player2 = Player(620, 340)
+        ball = Ball(475, 440)
         gates1 = Gates((10, 285), screen)
         gates2 = Gates((900, 285), screen, True)
         left1 = up1 = right1 = False
         left2 = up2 = right2 = False
         shot1 = shot2 = left = right = False
         self.is_scored = False
+        self.game = True
         while running:
             timer = pygame.time.Clock()
             timer.tick(60)
@@ -52,81 +57,137 @@ class Pitch:
                     if countdown == -1:
                         running = False
                         EndGame(screen, id1, id2, self.goals1, self.goals2, called)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if 20 < mouse_pos[0] < 90 and 20 < mouse_pos[1] < 90:
+                        settings = SettingsGame(screen, called)
+                        settings.draw()
+                        self.game = False
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_w]:
-                up1 = True
-            else:
-                up1 = False
-            if keys[pygame.K_a]:
-                left1 = True
-                right1 = False
-            elif keys[pygame.K_d]:
-                right1 = True
-                left1 = False
-            else:
-                left1 = right1 = False
-            if keys[pygame.K_UP]:
-                up2 = True
-            else:
-                up2 = False
-            if keys[pygame.K_LEFT]:
-                left2 = True
-                right2 = False
-            elif keys[pygame.K_RIGHT]:
-                right2 = True
-                left2 = False
-            else:
-                left2 = right2 = False
-            screen.blit(background, (0, 0))
-            # создание флагов, которые выбрали игроки
-            screen.blit(con_image2, (550, 510))
-            screen.blit(con_image, (350, 510))
-            # создание счета
-            self.score = fontObj.render(f'{self.goals1} : {self.goals2}', True, (0, 0, 0), None)
-            self.scoreRect = self.score.get_rect(center=(495, 540))
-            screen.blit(self.score, self.scoreRect)
-            self.textSurfaceObj = fontObj.render(f'{countdown}', True, (0, 0, 0), None)
-            self.textRectObj = self.textSurfaceObj.get_rect(center=(500, 30))
-            screen.blit(self.textSurfaceObj, self.textRectObj)
-            if self.is_scored:
-                time.sleep(1)
-                player1 = Player(300, 340)
-                player2 = Player(700, 340)
-                ball = Ball(500, 440)
-                self.is_scored = False
-            if player1.rect.x + 72 <= ball.x <= player1.rect.x + 87 and keys[pygame.K_f]:
-                shot1 = True
-                shot2 = False
-            elif player2.rect.x - 5 <= ball.x + 50 <= player2.rect.x + 7 and keys[pygame.K_SPACE]:
-                shot2 = True
-                shot1 = False
-            else:
-                shot1, shot2 = False, False
-            if player1.collide_ball_left(ball) and not left1:
-                right = True
-                left = False
-            elif player2.collide_ball_right(ball) and not right2:
-                left = True
-                right = False
-            else:
-                left, right = False, False
-            if ball.collide_both(player1, player2) and not left1 and not right2:
-                shot1 = shot2 = left = right = left1 = left2 = right1 = right2 = False
-            ball.update(left, right, shot1, shot2, player1, player2)
-            if gates1.check_goal(ball) == 1:
-                self.goals1 += 1
-                self.is_scored = True
-            elif gates2.check_goal(ball) == 2:
-                self.goals2 += 1
-                self.is_scored = True
-            player1.update(left1, right1, up1)
-            player2.update(left2, right2, up2)
-            player1.draw(screen)
-            player2.draw(screen)
-            ball.draw(screen)
-            gates1.draw()
-            gates2.draw()
+            if self.game or not settings.is_running():
+                if keys[pygame.K_w]:
+                    up1 = True
+                else:
+                    up1 = False
+                if keys[pygame.K_a]:
+                    left1 = True
+                    right1 = False
+                elif keys[pygame.K_d]:
+                    right1 = True
+                    left1 = False
+                else:
+                    left1 = right1 = False
+                if keys[pygame.K_UP]:
+                    up2 = True
+                else:
+                    up2 = False
+                if keys[pygame.K_LEFT]:
+                    left2 = True
+                    right2 = False
+                elif keys[pygame.K_RIGHT]:
+                    right2 = True
+                    left2 = False
+                else:
+                    left2 = right2 = False
+                screen.blit(background, (0, 0))
+                # создание флагов, которые выбрали игроки
+                screen.blit(con_image2, (560, 510))
+                screen.blit(con_image, (350, 510))
+                # создание счета
+                self.score = fontObj.render(f'{self.goals1} : {self.goals2}', True, (0, 0, 0), None)
+                self.scoreRect = self.score.get_rect(center=(500, 540))
+                screen.blit(self.score, self.scoreRect)
+                self.textSurfaceObj = fontObj.render(f'{countdown}', True, (0, 0, 0), None)
+                self.textRectObj = self.textSurfaceObj.get_rect(center=(500, 30))
+                screen.blit(self.textSurfaceObj, self.textRectObj)
+                if self.is_scored:
+                    time.sleep(1)
+                    player1 = Player(300, 340)
+                    player2 = Player(700, 340)
+                    ball = Ball(500, 440)
+                    self.is_scored = False
+                if player1.rect.x + 72 <= ball.x <= player1.rect.x + 87 and keys[pygame.K_f]:
+                    shot1 = True
+                    shot2 = False
+                elif player2.rect.x - 5 <= ball.x + 50 <= player2.rect.x + 7 and keys[pygame.K_SPACE]:
+                    shot2 = True
+                    shot1 = False
+                else:
+                    shot1, shot2 = False, False
+                if player1.collide_ball_left(ball) and not left1:
+                    right = True
+                    left = False
+                elif player2.collide_ball_right(ball) and not right2:
+                    left = True
+                    right = False
+                else:
+                    left, right = False, False
+                if ball.collide_both(player1, player2) and not (left1 or right2 or up1 or up2):
+                    shot1 = shot2 = left = right = left1 = left2 = right1 = right2 = False
+                ball.update(left, right, shot1, shot2, player1, player2)
+                if gates1.check_goal(ball) == 1:
+                    self.goals1 += 1
+                    self.is_scored = True
+                elif gates2.check_goal(ball) == 2:
+                    self.goals2 += 1
+                    self.is_scored = True
+                player1.update(left1, right1, up1)
+                player2.update(left2, right2, up2)
+                player1.draw(screen)
+                player2.draw(screen)
+                ball.draw(screen)
+                gates1.draw()
+                gates2.draw()
+                self.settings = pygame.image.load('image/settings.png')
+                screen.blit(self.settings, (20, 20))
             pygame.display.flip()
+
+
+class SettingsGame:
+    def __init__(self, screen, called):
+        self.sound_idx = 1
+        self.screen = screen
+        self.called = called
+        self.back = pygame.image.load('image/exit.png')
+        self.rules = pygame.image.load('image/rules.png')
+        self.play = pygame.image.load('image/next.png')
+        self.running = True
+
+    def draw(self):
+        pygame.draw.rect(self.screen, (255, 204, 0), (340, 260, 320, 80))
+        self.sound = pygame.image.load(f'image/sound{self.sound_idx}.png')
+        self.screen.blit(self.back, (348, 265))
+        self.screen.blit(self.rules, (426, 265))
+        self.screen.blit(self.sound, (504, 265))
+        self.screen.blit(self.play, (582, 265))
+        pygame.display.flip()
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if 348 < mouse_pos[0] < 418 and 265 < mouse_pos[1] < 335:
+                        if self.called == 'OneVSOne':
+                            OneVSOne.ChooseCountries(self.screen)
+                        elif self.called == 'AgainstBot':
+                            AgainstBot.ChooseCountry(self.screen)
+                        elif self.called == 'online':
+                            online.Online(self.screen)
+                        self.running = False
+                    elif 426 < mouse_pos[0] < 496 and 265 < mouse_pos[1] < 335:
+                        pass
+                    elif 504 < mouse_pos[0] < 574 and 265 < mouse_pos[1] < 335:
+                        if self.sound_idx == 4:
+                            self.sound_idx = 1
+                        else:
+                            self.sound_idx += 1
+                        self.draw()
+                    elif 582 < mouse_pos[0] < 652 and 265 < mouse_pos[1] < 335:
+                        self.running = False
+
+    def is_running(self):
+        return self.running
 
 
 class EndGame:
@@ -207,7 +268,7 @@ class Ball(pygame.sprite.Sprite):
         self.x = x  # Начальная позиция Х, пригодится когда будем переигрывать уровень
         self.y = y
         self.image = pygame.Surface((80, 80), pygame.SRCALPHA, 32)
-        self.image_ball = pygame.image.load('image/ball1.png')
+        self.ball_idx = 0
         self.rect = pygame.Rect(x, y, 50, 50)  # прямоугольный объект
         self.is_shot = False
         self.shot_count = 2
@@ -254,9 +315,14 @@ class Ball(pygame.sprite.Sprite):
                 self.x = 10
             else:
                 self.x = 940
-
+        if self.xvel:
+            if self.ball_idx == 3:
+                self.ball_idx = 0
+            else:
+                self.ball_idx += 1
 
     def draw(self, screen):  # Выводим себя на экран
+        self.image_ball = pygame.image.load(f'image/ball{self.ball_idx + 1}.png')
         screen.blit(self.image_ball, (self.x, self.rect.y))
 
     def collide_both(self, player1, player2):
