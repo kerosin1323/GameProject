@@ -289,13 +289,9 @@ class Ball(pygame.sprite.Sprite):
         if not self.shooting:
             if shot2:
                 self.xvel = -50
-            if left and (shot1 or shot2):
-                self.xvel -= 7  # Лево = x- n
-            elif left and not (shot1 or shot2):
-                self.xvel = -7
-            elif right and (shot1 or shot2):
-                self.xvel += 7  # Право = x + n
-            elif right and not (shot1 or shot2):
+            if left:
+                self.xvel = 7
+            elif right:
                 self.xvel = 7
 
             if not (left or right or shot1 or shot2 or self.shooting):  # стоим, когда нет указаний идти
@@ -306,8 +302,14 @@ class Ball(pygame.sprite.Sprite):
             self.xvel = 0
         if self.x + self.xvel <= p1.rect.x + 80 <= self.x:
             self.x = p1.rect.x + 80
+            self.is_shot = False
+            self.shooting = False
+            self.xvel = 0
         elif self.x + self.xvel >= p2.rect.x >= self.x:
             self.x = p2.rect.x - 50
+            self.is_shot = False
+            self.shooting = False
+            self.xvel = 0
         else:
             if 10 <= self.x + self.xvel <= 940:
                 self.x += self.xvel
@@ -373,5 +375,4 @@ class Player(pygame.sprite.Sprite):
 
     def collide_ball_right(self, ball):
         return self.rect.x <= ball.x + 50 <= self.rect.x + 6 and self.rect.y + 150 == ball.y + 50
-
 
