@@ -36,8 +36,8 @@ class Pitch:
         con_image = pygame.transform.scale(image, (90, 60))
         image2 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[id2]]}.png')
         con_image2 = pygame.transform.scale(image2, (90, 60))
-        player1 = Player(300, 340)
-        player2 = Player(620, 340)
+        player1 = Player(300, 376, True)
+        player2 = Player(620, 376)
         ball = Ball(475, 440)
         gates1 = Gates((10, 285), screen)
         gates2 = Gates((900, 285), screen, True)
@@ -106,15 +106,16 @@ class Pitch:
                     player2 = Player(700, 340)
                     ball = Ball(500, 440)
                     self.is_scored = False
-                if player1.rect.x + 72 <= ball.x <= player1.rect.x + 87 and keys[pygame.K_f]:
+                if pygame.sprite.collide_mask(player1, ball) and keys[pygame.K_f]:
                     shot1 = True
                     shot2 = False
-                elif player2.rect.x - 5 <= ball.x + 50 <= player2.rect.x + 7 and keys[pygame.K_SPACE]:
+                elif pygame.sprite.collide_mask(ball, player2) and keys[pygame.K_SPACE]:
                     shot2 = True
                     shot1 = False
                 else:
                     shot1, shot2 = False, False
                 if player1.collide_ball_left(ball) and not left1:
+                    print(1)
                     right = True
                     left = False
                 elif player2.collide_ball_right(ball) and not right2:
@@ -124,6 +125,8 @@ class Pitch:
                     left, right = False, False
                 if ball.collide_both(player1, player2) and not (left1 or right2 or up1 or up2):
                     shot1 = shot2 = left = right = left1 = left2 = right1 = right2 = False
+                player1.update(left1, right1, up1)
+                player2.update(left2, right2, up2)
                 ball.update(left, right, shot1, shot2, player1, player2)
                 if gates1.check_goal(ball) == 1:
                     self.goals1 += 1
@@ -131,8 +134,6 @@ class Pitch:
                 elif gates2.check_goal(ball) == 2:
                     self.goals2 += 1
                     self.is_scored = True
-                player1.update(left1, right1, up1)
-                player2.update(left2, right2, up2)
                 player1.draw(screen)
                 player2.draw(screen)
                 ball.draw(screen)
@@ -269,12 +270,16 @@ class Ball(pygame.sprite.Sprite):
         self.y = y
         self.image = pygame.Surface((80, 80), pygame.SRCALPHA, 32)
         self.ball_idx = 0
-        self.rect = pygame.Rect(x, y, 50, 50)  # прямоугольный объект
+        self.image_ball = pygame.image.load(f'image/ball{self.ball_idx + 1}.png')
+        self.rect = self.image_ball.get_rect()
+        print(self.rect.x)
         self.is_shot = False
         self.shot_count = 2
         self.shooting = False
         self.to_left = False
         self.to_right = False
+        self.speed = 7
+        self.mask = pygame.mask.from_surface(self.image_ball)
 
     def update(self, left, right, shot1, shot2, p1, p2):
         if not self.is_shot:
@@ -293,11 +298,17 @@ class Ball(pygame.sprite.Sprite):
                 self.xvel = -50
             else:
                 if left or self.to_left:
-                    self.xvel = 7
+                    self.xvel = -abs(self.speed)
                     self.to_left = True
                 elif right or self.to_right:
-                    self.xvel = 7
+                    self.xvel = abs(self.speed)
                     self.to_right = True
+                if (p1.collide_ball_left(self) and self.to_left or p2.collide_ball_right(self) and self.to_right)\
+                        and (right or left):
+                    self.speed = self.speed // -2
+                    self.to_left = False
+                    self.to_right = False
+
         if self.shooting and left:
             self.is_shot = False
             self.shooting = False
@@ -327,36 +338,39 @@ class Ball(pygame.sprite.Sprite):
 
     def draw(self, screen):  # Выводим себя на экран
         self.image_ball = pygame.image.load(f'image/ball{self.ball_idx + 1}.png')
-        screen.blit(self.image_ball, (self.x, self.rect.y))
+        screen.blit(self.image_ball, (self.x, self.y))
 
     def collide_both(self, player1, player2):
-        return player1.rect.x + 74 <= self.x <=self.x + 50 <= player2.rect.x + 6 and player1.rect.y + 150 == self.y + 50 \
+        return player1.rect.x + 74 <= self.x <= self.x + 50 <= player2.rect.x + 6 and player1.rect.y + 150 == self.y + 50 \
             and player2.rect.x - player1.rect.x <= 130
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, turn=False):
         super().__init__()
         self.xvel = 0  # скорость перемещения. 0 - стоять на месте
-        self.startX = x  # Начальная позиция Х, пригодится когда будем переигрывать уровень
-        self.startY = y
-        self.image = pygame.Surface((80, 150))
-        self.image.fill((255, 0, 0))
+        self.x = x  # Начальная позиция Х, пригодится когда будем переигрывать уровень
+        self.y = y
+        if turn:
+            self.player_image = pygame.image.load('image/player2.png')
+        else:
+            self.player_image = pygame.image.load('image/player1.png')
         self.is_jump = False
-        self.jump_count = 12
-        self.rect = pygame.Rect(x, y, 80, 150)  # прямоугольный объект
+        self.jump_count = 24
+        self.rect = self.player_image.get_rect()
+        self.mask = pygame.mask.from_surface(self.player_image)
 
     def update(self, left, right, up):
         if not self.is_jump:
             if up:
                 self.is_jump = True
         else:
-            if self.jump_count >= -12:
-                self.rect.y -= self.jump_count
-                self.jump_count -= 2
+            if self.jump_count >= -24:
+                self.y -= self.jump_count
+                self.jump_count -= 4
             else:
                 self.is_jump = False
-                self.jump_count = 12
+                self.jump_count = 24
         if left:
             self.xvel = -7  # Лево = x- n
 
@@ -366,14 +380,14 @@ class Player(pygame.sprite.Sprite):
         if not (left or right):  # стоим, когда нет указаний идти
             self.xvel = 0
 
-        if 10 <= self.rect.x + self.xvel <= 910:
-            self.rect.x += self.xvel  # переносим свои положение на xvel
+        if 10 <= self.x + self.xvel <= 910:
+            self.x += self.xvel  # переносим свои положение на xvel
 
     def draw(self, screen):  # Выводим себя на экран
-        screen.blit(self.image, (self.rect.x, self.rect.y))
+        screen.blit(self.player_image, (self.x, self.y))
 
     def collide_ball_left(self, ball):
-        return self.rect.x + 74 <= ball.x <= self.rect.x + 80 and self.rect.y + 150 == ball.y + 50
+        return pygame.sprite.collide_mask(self, ball)
 
     def collide_ball_right(self, ball):
-        return self.rect.x <= ball.x + 50 <= self.rect.x + 6 and self.rect.y + 150 == ball.y + 50
+        return pygame.sprite.collide_mask(ball, self)
