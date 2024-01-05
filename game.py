@@ -1,6 +1,6 @@
 import random
 import time
-
+from pygame.locals import *
 import pygame.sprite
 
 import AgainstBot
@@ -10,9 +10,6 @@ from const import *
 from OneVSOne import *
 import SQL
 import registration
-
-horizontal_borders = pygame.sprite.Group()
-vertical_borders = pygame.sprite.Group()
 
 
 class Pitch:
@@ -26,7 +23,6 @@ class Pitch:
         self.goals2 = 0
         background = pygame.image.load('image/map2.png')
         screen.blit(background, (0, 0))
-
         running = True
         countdown = 90
         TIMEREVENT = pygame.USEREVENT + 1
@@ -38,7 +34,7 @@ class Pitch:
         con_image2 = pygame.transform.scale(image2, (90, 60))
         player1 = Player(300, 376, True)
         player2 = Player(620, 376)
-        ball = Ball(475, 440)
+        ball = Ball(500, 440)
         gates1 = Gates((10, 285), screen)
         gates2 = Gates((900, 285), screen, True)
         left1 = up1 = right1 = False
@@ -46,9 +42,9 @@ class Pitch:
         shot1 = shot2 = left = right = False
         self.is_scored = False
         self.game = True
+        timer = pygame.time.Clock()
         while running:
-            timer = pygame.time.Clock()
-            timer.tick(60)
+            timer.tick(30)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -102,20 +98,19 @@ class Pitch:
                 screen.blit(self.textSurfaceObj, self.textRectObj)
                 if self.is_scored:
                     time.sleep(1)
-                    player1 = Player(300, 340)
-                    player2 = Player(700, 340)
+                    player1 = Player(300, 376, True)
+                    player2 = Player(620, 376)
                     ball = Ball(500, 440)
                     self.is_scored = False
-                if pygame.sprite.collide_mask(player1, ball) and keys[pygame.K_f]:
+                if 0 <= ball.rect.x - player1.rect.x - 60 <= 50 and keys[pygame.K_f]:
                     shot1 = True
                     shot2 = False
-                elif pygame.sprite.collide_mask(ball, player2) and keys[pygame.K_SPACE]:
+                elif 0 <= player2.rect.x - ball.rect.x <= 50 and keys[pygame.K_SPACE]:
                     shot2 = True
                     shot1 = False
                 else:
                     shot1, shot2 = False, False
                 if player1.collide_ball_left(ball) and not left1:
-                    print(1)
                     right = True
                     left = False
                 elif player2.collide_ball_right(ball) and not right2:
@@ -256,80 +251,80 @@ class Gates(pygame.sprite.Sprite):
         self.screen.blit(self.image_gate, self.pos)
 
     def check_goal(self, ball):
-        if ball.x > 900 and ball.y - 50 > self.rect.y:
+        if ball.rect.x > 900 and ball.rect.y - 50 > self.rect.y:
             return 1
-        elif ball.x < 50 and ball.y - 50 > self.rect.y:
+        elif ball.rect.x < 50 and ball.rect.y - 50 > self.rect.y:
             return 2
 
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.xvel = 0  # скорость перемещения. 0 - стоять на месте
-        self.x = x  # Начальная позиция Х, пригодится когда будем переигрывать уровень
-        self.y = y
-        self.image = pygame.Surface((80, 80), pygame.SRCALPHA, 32)
         self.ball_idx = 0
         self.image_ball = pygame.image.load(f'image/ball{self.ball_idx + 1}.png')
-        self.rect = self.image_ball.get_rect()
-        print(self.rect.x)
-        self.is_shot = False
-        self.shot_count = 2
-        self.shooting = False
-        self.to_left = False
-        self.to_right = False
-        self.speed = 7
         self.mask = pygame.mask.from_surface(self.image_ball)
+        self.rect = self.image_ball.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.is_shot = False
+        self.shot_count = 0.5
+        self.speed = 7
+        self.xvel = 0
+        self.yvel = 24
+        self.stop_y = False
 
     def update(self, left, right, shot1, shot2, p1, p2):
+        if self.speed != 7 and (p1.right and right or p2.left and left):
+            self.speed = 7
+        if left:
+            self.xvel = -self.speed
+        elif right:
+            self.xvel = self.speed
         if not self.is_shot:
             if shot1:
-                self.is_shot = True
+                self.is_shot = 1
+            elif shot2:
+                self.is_shot = -1
         else:
-            if self.shot_count <= 50:
-                self.xvel += self.shot_count
-                self.shooting = True
-                self.shot_count += 2
+            if abs(self.xvel) <= 50:
+                self.shot_count += 2 * self.is_shot
+                self.xvel = self.shot_count
             else:
                 self.is_shot = False
-                self.shot_count = 12
-        if not self.shooting:
-            if shot2:
-                self.xvel = -50
+                self.shot_count = 0.5
+        if self.collide_both(p1, p2):
+            self.xvel = 0
+        if self.rect.x + self.xvel <= p1.rect.x + 60 <= self.rect.x and self.rect.y + 50 == p1.rect.y + 114 == 490 and \
+                (not p1.left and self.is_shot or p1.left and not self.is_shot or p1.left and self.is_shot or not (p1.left and self.is_shot)):
+            self.rect.x = p1.rect.x + 60
+            self.rect.y = 440
+            if self.is_shot:
+                self.speed = 3
             else:
-                if left or self.to_left:
-                    self.xvel = -abs(self.speed)
-                    self.to_left = True
-                elif right or self.to_right:
-                    self.xvel = abs(self.speed)
-                    self.to_right = True
-                if (p1.collide_ball_left(self) and self.to_left or p2.collide_ball_right(self) and self.to_right)\
-                        and (right or left):
-                    self.speed = self.speed // -2
-                    self.to_left = False
-                    self.to_right = False
-
-        if self.shooting and left:
+                self.speed //= 2
+            self.xvel = self.speed
             self.is_shot = False
-            self.shooting = False
-            self.xvel = 0
-        if self.x + self.xvel <= p1.rect.x + 80 <= self.x:
-            self.x = p1.rect.x + 80
+            self.shot_count = 0.5
+        elif self.rect.x + self.xvel + 50 >= p2.rect.x + 20 >= self.rect.x + 50 and self.rect.y + 50 == p1.rect.y + 114 == 490 and \
+                (not p2.right and self.is_shot or p2.right and not self.is_shot or p2.right and self.is_shot or not (p2.right and self.is_shot)):
+            self.rect.x = p2.rect.x - 40
+            self.rect.y = 440
+            if self.is_shot:
+                self.speed = 3
+            else:
+                self.speed //= 2
             self.is_shot = False
-            self.shooting = False
-            self.xvel = 0
-        elif self.x + self.xvel >= p2.rect.x >= self.x:
-            self.x = p2.rect.x - 50
-            self.is_shot = False
-            self.shooting = False
-            self.xvel = 0
+            self.xvel = -self.speed
+            self.shot_count = 0.5
         else:
-            if 10 <= self.x + self.xvel <= 940:
-                self.x += self.xvel
-            elif self.x + self.xvel <= 10:
-                self.x = 10
+            if 10 <= self.rect.x + self.xvel <= 940:
+                self.rect.x += self.xvel
+            elif self.rect.x + self.xvel <= 10:
+                self.rect.x = 10
             else:
-                self.x = 940
+                self.rect.x = 940
+        if self.rect.y > 440:
+            self.rect.y = 440
         if self.xvel:
             if self.ball_idx == 3:
                 self.ball_idx = 0
@@ -338,35 +333,37 @@ class Ball(pygame.sprite.Sprite):
 
     def draw(self, screen):  # Выводим себя на экран
         self.image_ball = pygame.image.load(f'image/ball{self.ball_idx + 1}.png')
-        screen.blit(self.image_ball, (self.x, self.y))
+        screen.blit(self.image_ball, (self.rect.x, self.rect.y))
 
     def collide_both(self, player1, player2):
-        return player1.rect.x + 74 <= self.x <= self.x + 50 <= player2.rect.x + 6 and player1.rect.y + 150 == self.y + 50 \
-            and player2.rect.x - player1.rect.x <= 130
+        return player1.rect.x + 60 <= self.rect.x <= self.rect.x + 50 <= player2.rect.x + 60 and player1.rect.y + 114 == self.rect.y + 50 \
+            and player2.rect.x - player1.rect.x <= 100
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, turn=False):
         super().__init__()
         self.xvel = 0  # скорость перемещения. 0 - стоять на месте
-        self.x = x  # Начальная позиция Х, пригодится когда будем переигрывать уровень
-        self.y = y
         if turn:
-            self.player_image = pygame.image.load('image/player2.png')
+            self.player_image = load_image('image/player1.png')
         else:
-            self.player_image = pygame.image.load('image/player1.png')
+            self.player_image = load_image('image/player2.png')
         self.is_jump = False
         self.jump_count = 24
         self.rect = self.player_image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
         self.mask = pygame.mask.from_surface(self.player_image)
 
     def update(self, left, right, up):
+        self.left = left
+        self.right = right
         if not self.is_jump:
             if up:
                 self.is_jump = True
         else:
             if self.jump_count >= -24:
-                self.y -= self.jump_count
+                self.rect.y -= self.jump_count
                 self.jump_count -= 4
             else:
                 self.is_jump = False
@@ -380,11 +377,11 @@ class Player(pygame.sprite.Sprite):
         if not (left or right):  # стоим, когда нет указаний идти
             self.xvel = 0
 
-        if 10 <= self.x + self.xvel <= 910:
-            self.x += self.xvel  # переносим свои положение на xvel
+        if 10 <= self.rect.x + self.xvel <= 910:
+            self.rect.x += self.xvel  # переносим свои положение на xvel
 
     def draw(self, screen):  # Выводим себя на экран
-        screen.blit(self.player_image, (self.x, self.y))
+        screen.blit(self.player_image, (self.rect.x, self.rect.y))
 
     def collide_ball_left(self, ball):
         return pygame.sprite.collide_mask(self, ball)
