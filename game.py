@@ -1,12 +1,10 @@
 import random
 import time
-from pygame.locals import *
 import pygame.sprite
 
 import AgainstBot
 import OneVSOne
 import online
-from const import *
 from OneVSOne import *
 import SQL
 import registration
@@ -34,7 +32,7 @@ class Pitch:
         con_image2 = pygame.transform.scale(image2, (90, 60))
         player1 = Player(300, 376, True)
         player2 = Player(620, 376)
-        ball = Ball(500, 440)
+        ball = Ball(475, 440)
         gates1 = Gates((10, 285), screen)
         gates2 = Gates((900, 285), screen, True)
         left1 = up1 = right1 = False
@@ -105,7 +103,7 @@ class Pitch:
                 if 0 <= ball.rect.x - player1.rect.x - 60 <= 50 and keys[pygame.K_f]:
                     shot1 = True
                     shot2 = False
-                elif 0 <= player2.rect.x - ball.rect.x <= 50 and keys[pygame.K_SPACE]:
+                elif 0 <= player2.rect.x - ball.rect.x - 50 <= 50 and keys[pygame.K_SPACE]:
                     shot2 = True
                     shot1 = False
                 else:
@@ -140,8 +138,9 @@ class Pitch:
 
 
 class SettingsGame:
+    sound_idx = 1
+
     def __init__(self, screen, called):
-        self.sound_idx = 1
         self.screen = screen
         self.called = called
         self.back = pygame.image.load('image/exit.png')
@@ -151,7 +150,8 @@ class SettingsGame:
 
     def draw(self):
         pygame.draw.rect(self.screen, (255, 204, 0), (340, 260, 320, 80))
-        self.sound = pygame.image.load(f'image/sound{self.sound_idx}.png')
+        self.sound = pygame.image.load(f'image/sound{SettingsGame.sound_idx}.png')
+        self.volume = pygame.mixer.music.get_volume()
         self.screen.blit(self.back, (348, 265))
         self.screen.blit(self.rules, (426, 265))
         self.screen.blit(self.sound, (504, 265))
@@ -174,10 +174,14 @@ class SettingsGame:
                     elif 426 < mouse_pos[0] < 496 and 265 < mouse_pos[1] < 335:
                         pass
                     elif 504 < mouse_pos[0] < 574 and 265 < mouse_pos[1] < 335:
-                        if self.sound_idx == 4:
-                            self.sound_idx = 1
+                        if SettingsGame.sound_idx == 4:
+                            SettingsGame.sound_idx = 1
+                            self.volume = 1.0
+                            pygame.mixer.music.set_volume(self.volume)
                         else:
-                            self.sound_idx += 1
+                            SettingsGame.sound_idx += 1
+                            self.volume -= 0.33
+                            pygame.mixer.music.set_volume(self.volume)
                         self.draw()
                     elif 582 < mouse_pos[0] < 652 and 265 < mouse_pos[1] < 335:
                         self.running = False
@@ -251,9 +255,9 @@ class Gates(pygame.sprite.Sprite):
         self.screen.blit(self.image_gate, self.pos)
 
     def check_goal(self, ball):
-        if ball.rect.x > 900 and ball.rect.y - 50 > self.rect.y:
+        if ball.rect.x > 900 and ball.rect.y > self.rect.y:
             return 1
-        elif ball.rect.x < 50 and ball.rect.y - 50 > self.rect.y:
+        elif ball.rect.x < 50 and ball.rect.y > self.rect.y:
             return 2
 
 
@@ -270,7 +274,8 @@ class Ball(pygame.sprite.Sprite):
         self.shot_count = 0.5
         self.speed = 7
         self.xvel = 0
-        self.yvel = 24
+        self.yvel = 0
+        self.ymax = 0
         self.stop_y = False
 
     def update(self, left, right, shot1, shot2, p1, p2):
@@ -280,11 +285,16 @@ class Ball(pygame.sprite.Sprite):
             self.xvel = -self.speed
         elif right:
             self.xvel = self.speed
+
         if not self.is_shot:
             if shot1:
                 self.is_shot = 1
+                self.stop_y = False
+                self.yvel = self.ymax = min(max(30 - (self.rect.x - p1.rect.x - 60), 10), 28)
             elif shot2:
                 self.is_shot = -1
+                self.stop_y = False
+                self.yvel = self.ymax = min(max(30 - (p2.rect.x - self.rect.x - 50), 10), 28)
         else:
             if abs(self.xvel) <= 50:
                 self.shot_count += 2 * self.is_shot
@@ -292,12 +302,22 @@ class Ball(pygame.sprite.Sprite):
             else:
                 self.is_shot = False
                 self.shot_count = 0.5
+
+        if self.yvel >= -self.ymax and not self.stop_y:
+            self.rect.y -= self.yvel
+            self.yvel -= 1
+        else:
+            self.yvel = self.ymax
+            self.stop_y = True
+            self.rect.y = 490
+        if self.rect.y == 440 or self.rect.x == 940 or self.rect.x == 10:
+            self.ymax = self.yvel = self.ymax * 0.6
         if self.collide_both(p1, p2):
             self.xvel = 0
-        if self.rect.x + self.xvel <= p1.rect.x + 60 <= self.rect.x and self.rect.y + 50 == p1.rect.y + 114 == 490 and \
+            self.yvel = 0
+        if self.rect.x + self.xvel <= p1.rect.x + 60 <= self.rect.x and p1.rect.y <= self.rect.y + 50 <= p1.rect.y + 114 and \
                 (not p1.left and self.is_shot or p1.left and not self.is_shot or p1.left and self.is_shot or not (p1.left and self.is_shot)):
             self.rect.x = p1.rect.x + 60
-            self.rect.y = 440
             if self.is_shot:
                 self.speed = 3
             else:
@@ -305,10 +325,11 @@ class Ball(pygame.sprite.Sprite):
             self.xvel = self.speed
             self.is_shot = False
             self.shot_count = 0.5
-        elif self.rect.x + self.xvel + 50 >= p2.rect.x + 20 >= self.rect.x + 50 and self.rect.y + 50 == p1.rect.y + 114 == 490 and \
+            self.ymax *= 0.6
+            self.yvel = self.ymax
+        elif self.rect.x + self.xvel + 50 >= p2.rect.x + 20 >= self.rect.x + 50 and p2.rect.y <= self.rect.y + 50 <= p2.rect.y + 114 and \
                 (not p2.right and self.is_shot or p2.right and not self.is_shot or p2.right and self.is_shot or not (p2.right and self.is_shot)):
             self.rect.x = p2.rect.x - 40
-            self.rect.y = 440
             if self.is_shot:
                 self.speed = 3
             else:
@@ -316,12 +337,14 @@ class Ball(pygame.sprite.Sprite):
             self.is_shot = False
             self.xvel = -self.speed
             self.shot_count = 0.5
+            self.ymax *= 0.6
+            self.yvel = self.ymax
         else:
             if 10 <= self.rect.x + self.xvel <= 940:
                 self.rect.x += self.xvel
             elif self.rect.x + self.xvel <= 10:
                 self.rect.x = 10
-            else:
+            elif self.rect.x + self.xvel >= 940:
                 self.rect.x = 940
         if self.rect.y > 440:
             self.rect.y = 440

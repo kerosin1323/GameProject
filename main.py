@@ -6,6 +6,8 @@ from const import *
 if __name__ == '__main__':
     # инициализация pygame
     pygame.init()
+    pygame.mixer.music.load("sound.mp3")
+    pygame.mixer.music.play(-1)
     fpsClock = pygame.time.Clock()
     screen = pygame.display.set_mode(SIZE, pygame.RESIZABLE)
     # название окна
