@@ -91,3 +91,7 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+
+def clip(val, minval, maxval):
+    return min(max(val, minval), maxval)

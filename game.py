@@ -277,24 +277,33 @@ class Ball(pygame.sprite.Sprite):
         self.yvel = 0
         self.ymax = 0
         self.stop_y = False
+        self.shot_y = 0.5
 
     def update(self, left, right, shot1, shot2, p1, p2):
         if self.speed != 7 and (p1.right and right or p2.left and left):
             self.speed = 7
-        if left:
+        if left or self.rect.x >= 940:
             self.xvel = -self.speed
-        elif right:
+        elif right or self.rect.x <= 10:
             self.xvel = self.speed
+        if self.rect.x >= 940:
+            self.xvel = -self.speed
+            self.is_shot = False
+        elif self.rect.x <= 10:
+            self.xvel = self.speed
+            self.is_shot = False
 
         if not self.is_shot:
             if shot1:
                 self.is_shot = 1
                 self.stop_y = False
-                self.yvel = self.ymax = min(max(30 - (self.rect.x - p1.rect.x - 60), 10), 28)
+                self.shot_y = 0.5
+                self.yvel = self.ymax = min(max(30 - (self.rect.x - p1.rect.x - 60), 10), 22)
             elif shot2:
                 self.is_shot = -1
                 self.stop_y = False
-                self.yvel = self.ymax = min(max(30 - (p2.rect.x - self.rect.x - 50), 10), 28)
+                self.shot_y = 0.5
+                self.yvel = self.ymax = min(max(30 - (p2.rect.x - self.rect.x - 50), 10), 22)
         else:
             if abs(self.xvel) <= 50:
                 self.shot_count += 2 * self.is_shot
@@ -305,13 +314,20 @@ class Ball(pygame.sprite.Sprite):
 
         if self.yvel >= -self.ymax and not self.stop_y:
             self.rect.y -= self.yvel
-            self.yvel -= 1
+            self.yvel -= self.shot_y
         else:
             self.yvel = self.ymax
             self.stop_y = True
-            self.rect.y = 490
-        if self.rect.y == 440 or self.rect.x == 940 or self.rect.x == 10:
-            self.ymax = self.yvel = self.ymax * 0.6
+        if self.stop_y and self.rect.y != 440:
+            self.rect.y += self.shot_y
+            self.shot_y += 1
+        if self.rect.y == 440:
+            self.ymax *= 0.6
+            self.yvel = self.ymax
+        if self.rect.x == 940 or self.rect.x == 10:
+            self.ymax *= 0.35
+            self.yvel = self.ymax
+            self.shot_y = 1.5
         if self.collide_both(p1, p2):
             self.xvel = 0
             self.yvel = 0
@@ -325,8 +341,9 @@ class Ball(pygame.sprite.Sprite):
             self.xvel = self.speed
             self.is_shot = False
             self.shot_count = 0.5
-            self.ymax *= 0.6
+            self.ymax *= 1.2
             self.yvel = self.ymax
+            self.shot_y = 1.5
         elif self.rect.x + self.xvel + 50 >= p2.rect.x + 20 >= self.rect.x + 50 and p2.rect.y <= self.rect.y + 50 <= p2.rect.y + 114 and \
                 (not p2.right and self.is_shot or p2.right and not self.is_shot or p2.right and self.is_shot or not (p2.right and self.is_shot)):
             self.rect.x = p2.rect.x - 40
@@ -337,8 +354,9 @@ class Ball(pygame.sprite.Sprite):
             self.is_shot = False
             self.xvel = -self.speed
             self.shot_count = 0.5
-            self.ymax *= 0.6
+            self.ymax *= 1.2
             self.yvel = self.ymax
+            self.shot_y = 1.5
         else:
             if 10 <= self.rect.x + self.xvel <= 940:
                 self.rect.x += self.xvel
