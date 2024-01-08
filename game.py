@@ -280,6 +280,8 @@ class Ball(pygame.sprite.Sprite):
         self.shot_y = 0.5
 
     def update(self, left, right, shot1, shot2, p1, p2):
+        if self.check_crossbar_left():
+            print(self.check_crossbar_left(), 1)
         if self.speed != 7 and (p1.right and right or p2.left and left):
             self.speed = 7
         if left or self.rect.x >= 940:
@@ -319,15 +321,17 @@ class Ball(pygame.sprite.Sprite):
             self.yvel = self.ymax
             self.stop_y = True
         if self.stop_y and self.rect.y != 440:
-            self.rect.y += self.shot_y
-            self.shot_y += 1
+            self.rect.y += self.yvel
+            self.yvel -= self.shot_y + 1
         if self.rect.y == 440:
-            self.ymax *= 0.6
+            self.ymax *= 0.8
             self.yvel = self.ymax
+            self.shot_y = 1
+            self.stop_y = False
         if self.rect.x == 940 or self.rect.x == 10:
-            self.ymax *= 0.35
+            self.ymax *= 0.5
             self.yvel = self.ymax
-            self.shot_y = 1.5
+            self.stop_y = False
         if self.collide_both(p1, p2):
             self.xvel = 0
             self.yvel = 0
@@ -379,6 +383,12 @@ class Ball(pygame.sprite.Sprite):
     def collide_both(self, player1, player2):
         return player1.rect.x + 60 <= self.rect.x <= self.rect.x + 50 <= player2.rect.x + 60 and player1.rect.y + 114 == self.rect.y + 50 \
             and player2.rect.x - player1.rect.x <= 100
+
+    def check_crossbar_left(self):
+        if self.rect.x <= 90 and self.rect.y + 50 == 285:
+            return 1
+        elif self.rect.x == 100 and 235 <= self.rect.y <= 295:
+            return 2
 
 
 class Player(pygame.sprite.Sprite):
