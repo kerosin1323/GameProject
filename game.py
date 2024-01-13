@@ -58,31 +58,42 @@ class Pitch:
                         settings.draw()
                         self.game = False
             keys = pygame.key.get_pressed()
-            if self.game or not settings.is_running():
-                if keys[pygame.K_w]:
-                    up1 = True
-                else:
-                    up1 = False
-                if keys[pygame.K_a]:
-                    left1 = True
-                    right1 = False
-                elif keys[pygame.K_d]:
-                    right1 = True
-                    left1 = False
-                else:
-                    left1 = right1 = False
-                if keys[pygame.K_UP]:
-                    up2 = True
-                else:
-                    up2 = False
-                if keys[pygame.K_LEFT]:
-                    left2 = True
-                    right2 = False
-                elif keys[pygame.K_RIGHT]:
-                    right2 = True
-                    left2 = False
-                else:
-                    left2 = right2 = False
+            if keys[pygame.K_w]:
+                up1 = True
+            else:
+                up1 = False
+            if keys[pygame.K_a]:
+                left1 = True
+                right1 = False
+            elif keys[pygame.K_d]:
+                right1 = True
+                left1 = False
+            else:
+                left1 = right1 = False
+            if called != 'AgainstBot':
+                if self.game or not settings.is_running():
+                    if keys[pygame.K_UP]:
+                        up2 = True
+                    else:
+                        up2 = False
+                    if keys[pygame.K_LEFT]:
+                        left2 = True
+                        right2 = False
+                    elif keys[pygame.K_RIGHT]:
+                        right2 = True
+                        left2 = False
+                    else:
+                        left2 = right2 = False
+            else:
+
+                left2 = random.choice([0, 1])
+                right2 = random.choice([0, 1])
+                left2 = random.choice([0, 1])
+                right2 = random.choice([0, 1])
+                up2 = random.choice([0, 1])
+                if 0 <= player2.rect.x - ball.rect.x - 50 <= 50 and ball.rect.y >= 200:
+                    if random.choice([0, 1]):
+                        shot2 = True
                 screen.blit(background, (0, 0))
                 # создание флагов, которые выбрали игроки
                 screen.blit(con_image2, (560, 510))
@@ -280,8 +291,6 @@ class Ball(pygame.sprite.Sprite):
         self.shot_y = 0.5
 
     def update(self, left, right, shot1, shot2, p1, p2):
-        if self.check_crossbar_left():
-            print(self.check_crossbar_left(), 1)
         if self.speed != 7 and (p1.right and right or p2.left and left):
             self.speed = 7
         if left or self.rect.x >= 940:
@@ -328,10 +337,6 @@ class Ball(pygame.sprite.Sprite):
             self.yvel = self.ymax
             self.shot_y = 1
             self.stop_y = False
-        if self.rect.x == 940 or self.rect.x == 10:
-            self.ymax *= 0.5
-            self.yvel = self.ymax
-            self.stop_y = False
         if self.collide_both(p1, p2):
             self.xvel = 0
             self.yvel = 0
@@ -361,6 +366,9 @@ class Ball(pygame.sprite.Sprite):
             self.ymax *= 1.2
             self.yvel = self.ymax
             self.shot_y = 1.5
+        elif self.check_crossbar_right() or self.check_crossbar_left():
+            self.rect.y = 235
+            self.speed = -self.speed
         else:
             if 10 <= self.rect.x + self.xvel <= 940:
                 self.rect.x += self.xvel
@@ -385,10 +393,10 @@ class Ball(pygame.sprite.Sprite):
             and player2.rect.x - player1.rect.x <= 100
 
     def check_crossbar_left(self):
-        if self.rect.x <= 90 and self.rect.y + 50 == 285:
-            return 1
-        elif self.rect.x == 100 and 235 <= self.rect.y <= 295:
-            return 2
+        return self.rect.x <= 90 and 275 <= self.rect.y + 50 <= 290
+
+    def check_crossbar_right(self):
+        return self.rect.x + 25 >= 900 and 275 <= self.rect.y + 50 <= 290
 
 
 class Player(pygame.sprite.Sprite):

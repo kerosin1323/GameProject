@@ -28,13 +28,14 @@ class AgainstBotDB:
             self.connect.commit()
 
     def append(self, result, goals1, goals2, stage, country1, country2):
+        self.country1 = country1
+        self.country2 = country2
         self.cursor.execute('UPDATE againstBot SET matches = matches + 1, wins = wins + ?, draws = draws + ?, '
                             'loses = loses + ?, scored = scored + ?, missed = missed + ?, stage = ?, cleansheets = cleansheets + ?'
                             'WHERE name = ?', (*result, goals1, goals2, stage, goals2 == 0, self.name))
         self.connect.commit()
-        self.cursor.execute('INSERT INTO matches(name, country1, country2, goals1, goals2, stage, '
-                            'tournament_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                            (self.name, country1, country2, goals1, goals2, stage, 1))
+        self.cursor.execute('INSERT INTO matches(name, country1, country2, goals1, goals2) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                            (self.name, country1, country2, goals1, goals2))
         self.connect.commit()
 
     def get_all(self):
@@ -66,3 +67,5 @@ class OnlineDB:
         result = self.cursor.execute('SELECT matches, wins, draws, loses, scored, missed, cleansheets FROM online '
                                      'WHERE name = ?', (self.name,)).fetchall()
         return result if result else [(0, 0, 0, 0, 0, 0, 0)]
+
+
