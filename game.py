@@ -40,6 +40,7 @@ class Pitch:
         shot1 = shot2 = left = right = False
         self.is_scored = False
         self.game = True
+        self.turn = 0
         timer = pygame.time.Clock()
         while running:
             timer.tick(30)
@@ -71,29 +72,38 @@ class Pitch:
             else:
                 left1 = right1 = False
             if called != 'AgainstBot':
-                if self.game or not settings.is_running():
-                    if keys[pygame.K_UP]:
-                        up2 = True
-                    else:
-                        up2 = False
-                    if keys[pygame.K_LEFT]:
-                        left2 = True
-                        right2 = False
-                    elif keys[pygame.K_RIGHT]:
-                        right2 = True
-                        left2 = False
-                    else:
-                        left2 = right2 = False
+                if keys[pygame.K_UP]:
+                    up2 = True
+                else:
+                    up2 = False
+                if keys[pygame.K_LEFT]:
+                    left2 = True
+                    right2 = False
+                elif keys[pygame.K_RIGHT]:
+                    right2 = True
+                    left2 = False
+                else:
+                    left2 = right2 = False
             else:
-
-                left2 = random.choice([0, 1])
-                right2 = random.choice([0, 1])
-                left2 = random.choice([0, 1])
-                right2 = random.choice([0, 1])
-                up2 = random.choice([0, 1])
-                if 0 <= player2.rect.x - ball.rect.x - 50 <= 50 and ball.rect.y >= 200:
+                if abs(player2.rect.x - ball.rect.x) <= 50 and ball.rect.y < 200:
+                    right2 = left2 = False
+                elif ball.rect.x > player2.rect.x:
+                    left2 = False
+                    right2 = True
+                elif ball.rect.x < player2.rect.x:
+                    left2 = True
+                    right2 = False
+                if shot1 or 350 >= ball.rect.y >= 296:
+                    up2 = True
+                else:
+                    up2 = False
+                if 0 <= player2.rect.x - ball.rect.x - 50 <= 50 and ball.rect.y >= 250:
+                    left2 = True
                     if random.choice([0, 1]):
                         shot2 = True
+                elif shot2:
+                    shot2 = False
+            if self.game or not settings.is_running():
                 screen.blit(background, (0, 0))
                 # создание флагов, которые выбрали игроки
                 screen.blit(con_image2, (560, 510))
@@ -111,14 +121,17 @@ class Pitch:
                     player2 = Player(620, 376)
                     ball = Ball(500, 440)
                     self.is_scored = False
-                if 0 <= ball.rect.x - player1.rect.x - 60 <= 50 and keys[pygame.K_f]:
+                if 0 <= ball.rect.x - player1.rect.x - 60 <= 50 and ball.rect.y >= 250 and keys[pygame.K_f]:
                     shot1 = True
                     shot2 = False
-                elif 0 <= player2.rect.x - ball.rect.x - 50 <= 50 and keys[pygame.K_SPACE]:
+                elif 0 <= player2.rect.x - ball.rect.x - 50 <= 50 and keys[pygame.K_SPACE] and not called == 'AgainstBot':
                     shot2 = True
                     shot1 = False
                 else:
-                    shot1, shot2 = False, False
+                    if called != 'AgainstBot':
+                        shot1, shot2 = False, False
+                    else:
+                        shot1 = False
                 if player1.collide_ball_left(ball) and not left1:
                     right = True
                     left = False
@@ -128,7 +141,7 @@ class Pitch:
                 else:
                     left, right = False, False
                 if ball.collide_both(player1, player2) and not (left1 or right2 or up1 or up2):
-                    shot1 = shot2 = left = right = left1 = left2 = right1 = right2 = False
+                    shot1 = shot2 = left = right = left1 = left2 = right1 = right2 = self.turn = False
                 player1.update(left1, right1, up1)
                 player2.update(left2, right2, up2)
                 ball.update(left, right, shot1, shot2, player1, player2)
@@ -283,7 +296,7 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y = y
         self.is_shot = False
         self.shot_count = 0.5
-        self.speed = 7
+        self.speed = 8
         self.xvel = 0
         self.yvel = 0
         self.ymax = 0
@@ -291,8 +304,8 @@ class Ball(pygame.sprite.Sprite):
         self.shot_y = 0.5
 
     def update(self, left, right, shot1, shot2, p1, p2):
-        if self.speed != 7 and (p1.right and right or p2.left and left):
-            self.speed = 7
+        if self.speed != 8 and (p1.right and right or p2.left and left):
+            self.speed = 8
         if left or self.rect.x >= 940:
             self.xvel = -self.speed
         elif right or self.rect.x <= 10:
@@ -339,12 +352,11 @@ class Ball(pygame.sprite.Sprite):
             self.stop_y = False
         if self.collide_both(p1, p2):
             self.xvel = 0
-            self.yvel = 0
-        if self.rect.x + self.xvel <= p1.rect.x + 60 <= self.rect.x and p1.rect.y <= self.rect.y + 50 <= p1.rect.y + 114 and \
+        if self.rect.x + self.xvel <= p1.rect.x + 70 <= self.rect.x and p1.rect.y <= self.rect.y + 50 <= p1.rect.y + 120 and \
                 (not p1.left and self.is_shot or p1.left and not self.is_shot or p1.left and self.is_shot or not (p1.left and self.is_shot)):
             self.rect.x = p1.rect.x + 60
             if self.is_shot:
-                self.speed = 3
+                self.speed = 4
             else:
                 self.speed //= 2
             self.xvel = self.speed
@@ -353,11 +365,11 @@ class Ball(pygame.sprite.Sprite):
             self.ymax *= 1.2
             self.yvel = self.ymax
             self.shot_y = 1.5
-        elif self.rect.x + self.xvel + 50 >= p2.rect.x + 20 >= self.rect.x + 50 and p2.rect.y <= self.rect.y + 50 <= p2.rect.y + 114 and \
+        elif self.rect.x + self.xvel + 50 >= p2.rect.x + 10 >= self.rect.x + 50 and p2.rect.y <= self.rect.y + 50 <= p2.rect.y + 114 and \
                 (not p2.right and self.is_shot or p2.right and not self.is_shot or p2.right and self.is_shot or not (p2.right and self.is_shot)):
             self.rect.x = p2.rect.x - 40
             if self.is_shot:
-                self.speed = 3
+                self.speed = 4
             else:
                 self.speed //= 2
             self.is_shot = False
@@ -366,9 +378,12 @@ class Ball(pygame.sprite.Sprite):
             self.ymax *= 1.2
             self.yvel = self.ymax
             self.shot_y = 1.5
-        elif self.check_crossbar_right() or self.check_crossbar_left():
+        elif self.check_crossbar_right():
+            self.rect.x -= 4
             self.rect.y = 235
-            self.speed = -self.speed
+        elif self.check_crossbar_left():
+            self.rect.x += 4
+            self.rect.y = 235
         else:
             if 10 <= self.rect.x + self.xvel <= 940:
                 self.rect.x += self.xvel
@@ -393,10 +408,10 @@ class Ball(pygame.sprite.Sprite):
             and player2.rect.x - player1.rect.x <= 100
 
     def check_crossbar_left(self):
-        return self.rect.x <= 90 and 275 <= self.rect.y + 50 <= 290
+        return self.rect.x < 100 and 275 <= self.rect.y + 50 <= 290
 
     def check_crossbar_right(self):
-        return self.rect.x + 25 >= 900 and 275 <= self.rect.y + 50 <= 290
+        return self.rect.x >= 900 and 275 <= self.rect.y + 50 <= 290
 
 
 class Player(pygame.sprite.Sprite):
@@ -404,7 +419,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.xvel = 0  # скорость перемещения. 0 - стоять на месте
         if turn:
-            self.player_image = load_image('image/player1.png')
+            self.player_image = pygame.image.load('image/player1.png')
         else:
             self.player_image = load_image('image/player2.png')
         self.is_jump = False
@@ -428,10 +443,10 @@ class Player(pygame.sprite.Sprite):
                 self.is_jump = False
                 self.jump_count = 24
         if left:
-            self.xvel = -7  # Лево = x- n
+            self.xvel = -8  # Лево = x- n
 
         if right:
-            self.xvel = 7  # Право = x + n
+            self.xvel = 8  # Право = x + n
 
         if not (left or right):  # стоим, когда нет указаний идти
             self.xvel = 0
