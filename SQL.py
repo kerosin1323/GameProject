@@ -34,7 +34,7 @@ class AgainstBotDB:
                             'loses = loses + ?, scored = scored + ?, missed = missed + ?, stage = ?, cleansheets = cleansheets + ?'
                             'WHERE name = ?', (*result, goals1, goals2, stage, goals2 == 0, self.name))
         self.connect.commit()
-        self.cursor.execute('INSERT INTO matches(name, country1, country2, goals1, goals2) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        self.cursor.execute('INSERT INTO matches(name, country1, country2, goals1, goals2) VALUES (?, ?, ?, ?, ?)',
                             (self.name, country1, country2, goals1, goals2))
         self.connect.commit()
 
