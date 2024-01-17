@@ -88,7 +88,7 @@ class Online:
 
     def func(self):
         self.name = self.text_input_box.text
-        if sum([1 for i in self.name if i.isdigit()]) != len(self.name):
-            self.error = 'Ошибка! Пароль должны состоять из чисел!'
+        if sum([1 for i in self.name if i.isdigit()]) != len(self.name) or len(self.name) == 0:
+            self.error = 'Ошибка! Пароль должен состоять из чисел!'
         else:
             game.Pitch(self.screen, 'online', self.id_country1)

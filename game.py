@@ -35,7 +35,7 @@ class Pitch:
         # создание моделек игроков, мяча и ворот
         player1 = Player(300, 376, True)
         player2 = Player(620, 376)
-        ball = Ball(500, 440)
+        ball = Ball(475, 440)
         gates1 = Gates((10, 285), screen)
         gates2 = Gates((900, 285), screen, True)
         left2 = up2 = right2 = self.is_scored = shot1 = shot2 = left = right = left1 = up1 = right1 = False
@@ -175,6 +175,7 @@ class Pitch:
 class SettingsGame:
     """Окно настроек игрового процесса"""
     sound_idx = 1
+    volume = 1
 
     def __init__(self, screen, called):
         self.screen = screen
@@ -188,8 +189,7 @@ class SettingsGame:
     def draw(self):
         # отрисовка иконок
         pygame.draw.rect(self.screen, (255, 204, 0), (340, 260, 320, 80))
-        self.sound = pygame.image.load(f'image/sounds/sound{SettingsGame.sound_idx}.png')
-        self.volume = pygame.mixer.music.get_volume()
+        self.sound = pygame.image.load(f'image/sounds/sound{self.sound_idx}.png')
         self.screen.blit(self.back, (348, 265))
         self.screen.blit(self.rules, (426, 265))
         self.screen.blit(self.sound, (504, 265))
@@ -203,23 +203,25 @@ class SettingsGame:
                     mouse_pos = pygame.mouse.get_pos()
                     # обработка нажатий
                     if 348 < mouse_pos[0] < 418 and 265 < mouse_pos[1] < 335:
+                        self.volume = 1.0
+                        pygame.mixer.music.set_volume(1)
+                        self.running = False
                         if self.called == 'OneVSOne':
                             OneVSOne.ChooseCountries(self.screen)
                         elif self.called == 'AgainstBot':
                             AgainstBot.ChooseCountry(self.screen)
                         elif self.called == 'online':
                             online.Online(self.screen)
-                        self.running = False
                     elif 426 < mouse_pos[0] < 496 and 265 < mouse_pos[1] < 335:
                         pass
                     elif 504 < mouse_pos[0] < 574 and 265 < mouse_pos[1] < 335:
                         # изменение звука
-                        if SettingsGame.sound_idx == 4:
-                            SettingsGame.sound_idx = 1
+                        if self.sound_idx == 4:
+                            self.sound_idx = 1
                             self.volume = 1.0
                             pygame.mixer.music.set_volume(self.volume)
                         else:
-                            SettingsGame.sound_idx += 1
+                            self.sound_idx += 1
                             self.volume -= 0.33
                             pygame.mixer.music.set_volume(self.volume)
                         self.draw()
@@ -249,7 +251,7 @@ class EndGame:
             SQL.OnlineDB(name).append(res, score1, score2)
         self.screen = screen
         # фон
-        background = pygame.image.load('image/map2.png')
+        background = pygame.image.load('image/map.png')
         screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
         self.buttonSurface = pygame.Surface((400, 300))
