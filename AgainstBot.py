@@ -7,10 +7,11 @@ import stats
 
 
 class ChooseCountry:
+    """Создание окна для выбора страны в режиме Против бота"""
     def __init__(self, screen):
         self.screen = screen
         # фон экрана
-        background = pygame.image.load('image/map2.png')
+        background = pygame.image.load('image/map.png')
         screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
 
@@ -35,6 +36,7 @@ class ChooseCountry:
 
         self.id_country1 = 0
         running = True
+        # игровой цикл
         while running:
             # создание флага страны
             self.image1 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country1]]}.png')

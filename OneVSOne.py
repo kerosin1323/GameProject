@@ -9,7 +9,7 @@ class ChooseCountries:
     """Создание окна с выбором стран пользователей"""
     def __init__(self, screen):
         self.screen = screen
-        background = pygame.image.load('image/map2.png')
+        background = pygame.image.load('image/map.png')
         self.screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
         # заголовок окна
@@ -22,6 +22,7 @@ class ChooseCountries:
         triangle2 = (350, 350), (350, 250), (400, 300)
         triangle3 = (650, 350), (650, 250), (600, 300)
         triangle4 = (900, 350), (900, 250), (950, 300)
+        # вывод на экран
         pygame.draw.polygon(self.screen, (0, 255, 0), triangle1)
         pygame.draw.polygon(self.screen, (0, 255, 0), triangle2)
         pygame.draw.polygon(self.screen, (0, 255, 0), triangle3)
@@ -42,14 +43,13 @@ class ChooseCountries:
         # кнопки для перемещения по окнам и для открывания статистики
         self.image_back = pygame.image.load('image/home.png')
         self.image_next = pygame.image.load('image/next.png')
-        self.image_stats = pygame.image.load('image/stats.png')
-        screen.blit(self.image_stats, (30, 30))
         screen.blit(self.image_back, (30, 510))
         screen.blit(self.image_next, (900, 510))
 
         self.id_country1 = 0
         self.id_country2 = 0
         running = True
+        # игровой цикл
         while running:
             # создание флага страны
             self.image1 = pygame.image.load(f'image/flags/{COUNTRIES_FLAG[COUNTRY[self.id_country1]]}.png')

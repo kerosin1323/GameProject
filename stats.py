@@ -1,7 +1,5 @@
 import sys
-
 import pygame
-
 import AgainstBot
 import SQL
 import online
@@ -9,10 +7,11 @@ import registration
 
 
 class Stats:
+    """Статистика матчей пользователя"""
     def __init__(self, screen, called):
         self.screen = screen
         # фон экрана
-        background = pygame.image.load('image/map2.png')
+        background = pygame.image.load('image/map.png')
         screen.blit(background, (0, 0))
         fontObj = pygame.font.Font(None, 50)
 
@@ -26,6 +25,7 @@ class Stats:
             self.textSurface = fontObj.render(f'{i}', True, (0, 0, 0), None)
             self.textRect = self.textSurface.get_rect(topleft=(100, 150 + category.index(i) * 50))
             screen.blit(self.textSurface, self.textRect)
+        # БД
         name = registration.Registration.name
         if called == 'AgainstBot':
             data = SQL.AgainstBotDB(name).get_all()[0]
@@ -38,11 +38,13 @@ class Stats:
         self.image_back = pygame.image.load('image/home.png')
         screen.blit(self.image_back, (30, 510))
         running = True
+        # игровой цикл
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                # обработка нажатия
                 elif event.type == pygame.MOUSEBUTTONDOWN and running:
                     mouse_pos = pygame.mouse.get_pos()
                     if 30 < mouse_pos[0] < 100 and 510 < mouse_pos[1] < 580:
@@ -52,4 +54,3 @@ class Stats:
                         else:
                             online.Online(screen)
             pygame.display.flip()
-

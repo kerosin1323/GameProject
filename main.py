@@ -6,6 +6,7 @@ from const import *
 if __name__ == '__main__':
     # инициализация pygame
     pygame.init()
+    # музыка
     pygame.mixer.music.load("sound.mp3")
     pygame.mixer.music.play(-1)
     fpsClock = pygame.time.Clock()

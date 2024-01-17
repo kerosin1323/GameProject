@@ -5,17 +5,19 @@ import SQL
 
 class Registration:
     name = ''
-
+    """Регистрация пользователя"""
     def __init__(self, screen):
         self.error = ''
         self.screen = screen
-        background = pygame.image.load('image/map2.png')
+        # фон
+        background = pygame.image.load('image/map.png')
         screen.blit(background, (0, 0))
         font = pygame.font.Font(None, 50)
         # создание линии для ввода текста
         self.text_input_box = TextInputBox(300, 300, 400, font, self.func)
         group = pygame.sprite.Group(self.text_input_box)
         self.running = True
+        # игровой цикл
         while self.running:
             event_list = pygame.event.get()
             for event in event_list:

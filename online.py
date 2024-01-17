@@ -1,6 +1,5 @@
 import sys
 import stats
-import pygame
 from const import *
 import firstwindow
 import game
@@ -12,15 +11,16 @@ class Online:
         self.screen = screen
         self.error = ''
         # фон экрана
-        background = pygame.image.load('image/map2.png')
+        background = pygame.image.load('image/map.png')
         screen.blit(background, (0, 0))
         font = pygame.font.Font(None, 50)
-
+        # линия ввода кода игры
         self.text_input_box = TextInputBox(300, 450, 400, font, self.func)
         group = pygame.sprite.Group(self.text_input_box)
 
         self.id_country1 = 0
         running = True
+        # игровой цикл
         while running:
             screen.blit(background, (0, 0))
             # заголовок
@@ -42,6 +42,7 @@ class Online:
             self.image_back = pygame.image.load('image/home.png')
             self.image_next = pygame.image.load('image/next.png')
             self.image_stats = pygame.image.load('image/stats.png')
+            # вывод на экран
             screen.blit(self.image_stats, (30, 30))
             screen.blit(self.image_back, (30, 510))
             screen.blit(self.image_next, (900, 510))
